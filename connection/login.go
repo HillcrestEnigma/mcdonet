@@ -18,7 +18,7 @@ func (c *Connection) HandleLogin() (err error) {
 		return
 	}
 
-	return
+	return c.HandleConfiguration()
 }
 
 func (c *Connection) ReadLoginStart() (err error) {

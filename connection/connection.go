@@ -67,7 +67,7 @@ func (c *Connection) Close() {
 	c.net.Close()
 }
 
-func (c *Connection) ReadPacket(acceptableIDs ...int) (p *packet.Packet, err error) {
+func (c *Connection) ReadPacket(allowedIDs ...int) (p *packet.Packet, err error) {
 	length, err := datatype.ReadVarInt(c.buf)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (c *Connection) ReadPacket(acceptableIDs ...int) (p *packet.Packet, err err
 	if err != nil {
 		return nil, err
 	}
-	if !slices.Contains(acceptableIDs, id) {
+	if len(allowedIDs) > 0 && !slices.Contains(allowedIDs, id) {
 		return nil, fmt.Errorf("unexpected packet id %d", id)
 	}
 
@@ -91,6 +91,19 @@ func (c *Connection) ReadPacket(acceptableIDs ...int) (p *packet.Packet, err err
 	p.Write(byteSlice)
 
 	return
+}
+
+func (c *Connection) AcceptPacket(acceptableIDs ...int) (p *packet.Packet, err error) {
+	for {
+		p, err = c.ReadPacket()
+		if err != nil {
+			return
+		}
+
+		if slices.Contains(acceptableIDs, p.Id) {
+			return
+		}
+	}
 }
 
 func (c *Connection) WritePacket(p *packet.Packet) (err error) {
