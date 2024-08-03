@@ -1,38 +1,39 @@
-package connection
+package packet
 
 import (
 	"bytes"
 	"encoding/json"
 
 	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/google/uuid"
 )
 
 type Packet struct {
-	id   int
-	data *bytes.Buffer
+	Id   int
+	Data *bytes.Buffer
 }
 
 func NewPacket(id int) *Packet {
 	return &Packet{
-		id:   id,
-		data: bytes.NewBuffer([]byte{}),
+		Id:   id,
+		Data: bytes.NewBuffer([]byte{}),
 	}
 }
 
 func (p *Packet) Read(b []byte) (n int, err error) {
-	return p.data.Read(b)
+	return p.Data.Read(b)
 }
 
 func (p *Packet) ReadByte() (byte, error) {
-	return p.data.ReadByte()
+	return p.Data.ReadByte()
 }
 
 func (p *Packet) Write(b []byte) (n int, err error) {
-	return p.data.Write(b)
+	return p.Data.Write(b)
 }
 
 func (p *Packet) WriteByte(b byte) error {
-	return p.data.WriteByte(b)
+	return p.Data.WriteByte(b)
 }
 
 
@@ -71,4 +72,8 @@ func (p *Packet) ReadLong() (int64, error) {
 
 func (p *Packet) WriteLong(value int64) error {
 	return datatype.WriteLong(p, value)
+}
+
+func (p *Packet) ReadUUID() (uuid.UUID, error) {
+	return datatype.ReadUUID(p)
 }

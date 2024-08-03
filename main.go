@@ -16,13 +16,11 @@ func main() {
 	defer l.Close()
 
 	for {
-		netConn, err := l.Accept()
+		c, err := l.Accept()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		c := connection.NewConnection(netConn)
-
-		go c.HandleConnection()
+		go connection.HandleConnection(c)
 	}
 }

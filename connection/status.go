@@ -2,6 +2,8 @@ package connection
 
 import (
 	"errors"
+
+	"github.com/HillcrestEnigma/mcbuild/packet"
 )
 
 type StatusResponseVersion struct {
@@ -20,7 +22,7 @@ func (c *Connection) HandleServerListPing() error {
 			return err
 		}
 
-		switch packet.id {
+		switch packet.Id {
 		case 0x00:
 			err = c.HandleStatusRequest()
 			if err != nil {
@@ -39,7 +41,7 @@ func (c *Connection) HandleServerListPing() error {
 }
 
 func (c *Connection) HandleStatusRequest() (err error) {
-	packet := NewPacket(0x00)
+	packet := packet.NewPacket(0x00)
 
 	response := StatusResponse{
 		Version: StatusResponseVersion{
@@ -56,13 +58,13 @@ func (c *Connection) HandleStatusRequest() (err error) {
 	return c.WritePacket(packet)
 }
 
-func (c *Connection) HandleStatusPing(request *Packet) error {
+func (c *Connection) HandleStatusPing(request *packet.Packet) error {
 	payload, err := request.ReadLong()
 	if err != nil {
 		return err
 	}
 
-	response := NewPacket(0x01)
+	response := packet.NewPacket(0x01)
 	err = response.WriteLong(payload)
 	if err != nil {
 		return err

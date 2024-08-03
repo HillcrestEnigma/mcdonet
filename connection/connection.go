@@ -3,9 +3,12 @@ package connection
 import (
 	"bufio"
 	"bytes"
+	"io"
+	"log"
 	"net"
 
 	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcbuild/packet"
 )
 
 type ConnectionState int
@@ -23,11 +26,41 @@ type Connection struct {
 	buf   *bufio.ReadWriter
 }
 
-func NewConnection(c net.Conn) *Connection {
-	return &Connection{
+func HandleConnection(netConn net.Conn) {
+	c := &Connection{
 		state: 0,
-		net:   c,
-		buf:   bufio.NewReadWriter(bufio.NewReader(c), bufio.NewWriter(c)),
+		net:   netConn,
+		buf:   bufio.NewReadWriter(bufio.NewReader(netConn), bufio.NewWriter(netConn)),
+	}
+
+	defer c.Close()
+
+	isLegacy, err := c.HandleLegacyServerListPing()
+	if err != nil {
+		return
+	}
+	if isLegacy {
+		return
+	}
+
+	handshake, err := c.ReadHandshake()
+	if err != nil {
+		return
+	}
+
+	switch handshake.nextState {
+	case 1:
+		err = c.HandleServerListPing()
+	case 2:
+		err = c.HandleLogin()
+	}
+
+	if err != nil {
+		if err == io.EOF {
+			log.Println("Connection closed by client")
+		} else {
+			log.Println(err)
+		}
 	}
 }
 
@@ -35,7 +68,7 @@ func (c *Connection) Close() {
 	c.net.Close()
 }
 
-func (c *Connection) ReadPacket() (packet *Packet, err error) {
+func (c *Connection) ReadPacket() (p *packet.Packet, err error) {
 	length, err := datatype.ReadVarInt(c.buf)
 	if err != nil {
 		return nil, err
@@ -52,26 +85,21 @@ func (c *Connection) ReadPacket() (packet *Packet, err error) {
 		return nil, err
 	}
 
-	data := bytes.NewBuffer(byteSlice)
-	data.Write(byteSlice)
-
-	packet = &Packet{
-		id:   id,
-		data: data,
-	}
+	p = packet.NewPacket(id)
+	p.Write(byteSlice)
 
 	return
 }
 
-func (c *Connection) WritePacket(p *Packet) (err error) {
+func (c *Connection) WritePacket(p *packet.Packet) (err error) {
 	var buf bytes.Buffer
 
-	err = datatype.WriteVarInt(&buf, p.id)
+	err = datatype.WriteVarInt(&buf, p.Id)
 	if err != nil {
 		return err
 	}
 
-	_, err = buf.Write(p.data.Bytes())
+	_, err = buf.Write(p.Data.Bytes())
 	if err != nil {
 		return err
 	}
@@ -88,3 +116,5 @@ func (c *Connection) WritePacket(p *Packet) (err error) {
 
 	return c.buf.Flush()
 }
+
+
