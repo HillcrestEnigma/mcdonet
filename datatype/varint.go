@@ -1,8 +1,8 @@
 package datatype
 
-func ReadVarInt(b Reader) (value int, err error) {
+func ReadVarInt(r Reader) (value int, err error) {
 	for shift := 0; true; shift += 7 {
-		cur, err := b.ReadByte()
+		cur, err := r.ReadByte()
 
 		if err != nil {
 			return 0, err
@@ -18,14 +18,14 @@ func ReadVarInt(b Reader) (value int, err error) {
 	return
 }
 
-func WriteVarInt(b Writer, value int) (err error) {
+func WriteVarInt(w Writer, value int) (err error) {
 	for {
 		if ((value & 0x80) == 0) {
-			b.WriteByte(byte(value))
+			w.WriteByte(byte(value))
 			return;
 		}
 
-		b.WriteByte(byte((value & 0x7F) | 0x80))
+		w.WriteByte(byte((value & 0x7F) | 0x80))
 
 		value >>= 7
 	}

@@ -12,27 +12,27 @@ type Handshake struct {
 }
 
 func (c *Connection) ReadHandshake() (handshake *Handshake, err error) {
-	packet, err := c.ReadPacket()
+	p, err := c.ReadPacket(0x00)
 	if err != nil {
 		return
 	}
 
-	protoVer, err := packet.ReadVarInt()
+	protoVer, err := p.ReadVarInt()
 	if err != nil {
 		return
 	}
 
-	serverAddr, err := packet.ReadString()
+	serverAddr, err := p.ReadString()
 	if err != nil {
 		return
 	}
 
-	serverPort, err := packet.ReadUnsignedShort()
+	serverPort, err := p.ReadUInt16()
 	if err != nil {
 		return
 	}
 
-	nextState, err := packet.ReadVarInt()
+	nextState, err := p.ReadVarInt()
 	if err != nil {
 		return
 	}

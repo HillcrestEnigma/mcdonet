@@ -15,3 +15,17 @@ func ReadUUID(r Reader) (value uuid.UUID, err error) {
 	value, err = uuid.FromBytes(buf)
 	return
 }
+
+func WriteUUID(w Writer, value uuid.UUID) (err error) {
+	bin, err := value.MarshalBinary()
+	if err != nil {
+		return
+	}
+
+	_, err = w.Write(bin)
+	if err != nil {
+		return
+	}
+
+	return
+}

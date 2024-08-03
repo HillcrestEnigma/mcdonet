@@ -3,34 +3,33 @@ package connection
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"net"
+	"slices"
 
 	"github.com/HillcrestEnigma/mcbuild/datatype"
 	"github.com/HillcrestEnigma/mcbuild/packet"
+	"github.com/google/uuid"
 )
 
-type ConnectionState int
-
-const (
-	ConnectionStateHandshake = iota
-	ConnectionStateStatus
-	ConnectionStateLogin
-	ConnectionStatePlay
-)
+type ConnectionPlayer struct {
+	UUID     uuid.UUID
+	Username string
+}
 
 type Connection struct {
-	state ConnectionState
-	net   net.Conn
-	buf   *bufio.ReadWriter
+	player *ConnectionPlayer
+	net    net.Conn
+	buf    *bufio.ReadWriter
 }
 
 func HandleConnection(netConn net.Conn) {
 	c := &Connection{
-		state: 0,
-		net:   netConn,
-		buf:   bufio.NewReadWriter(bufio.NewReader(netConn), bufio.NewWriter(netConn)),
+		player: nil,
+		net:    netConn,
+		buf:    bufio.NewReadWriter(bufio.NewReader(netConn), bufio.NewWriter(netConn)),
 	}
 
 	defer c.Close()
@@ -68,7 +67,7 @@ func (c *Connection) Close() {
 	c.net.Close()
 }
 
-func (c *Connection) ReadPacket() (p *packet.Packet, err error) {
+func (c *Connection) ReadPacket(acceptableIDs ...int) (p *packet.Packet, err error) {
 	length, err := datatype.ReadVarInt(c.buf)
 	if err != nil {
 		return nil, err
@@ -77,6 +76,9 @@ func (c *Connection) ReadPacket() (p *packet.Packet, err error) {
 	id, err := datatype.ReadVarInt(c.buf)
 	if err != nil {
 		return nil, err
+	}
+	if !slices.Contains(acceptableIDs, id) {
+		return nil, fmt.Errorf("unexpected packet id %d", id)
 	}
 
 	byteSlice := make([]byte, length-1)
@@ -116,5 +118,3 @@ func (c *Connection) WritePacket(p *packet.Packet) (err error) {
 
 	return c.buf.Flush()
 }
-
-

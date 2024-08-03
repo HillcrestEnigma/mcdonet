@@ -1,8 +1,8 @@
 package datatype
 
-func ReadUnsignedShort(b Reader) (uint16, error) {
+func ReadUInt16(r Reader) (uint16, error) {
 	buf := make([]byte, 2)
-	_, err := b.Read(buf)
+	_, err := r.Read(buf)
 	if err != nil {
 		return 0, err
 	}

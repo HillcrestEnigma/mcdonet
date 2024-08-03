@@ -1,14 +1,14 @@
 package datatype
 
-func ReadString(b Reader) (string, error) {
-	length, err := ReadVarInt(b)
+func ReadString(r Reader) (string, error) {
+	length, err := ReadVarInt(r)
 
 	if err != nil {
 		return "", err
 	}
 
 	buf := make([]byte, length)
-	_, err = b.Read(buf)
+	_, err = r.Read(buf)
 	if err != nil {
 		return "", err
 	}
@@ -16,12 +16,12 @@ func ReadString(b Reader) (string, error) {
 	return string(buf), nil
 }
 
-func WriteString(b Writer, str string) error {
-	err := WriteVarInt(b, len(str))
+func WriteString(w Writer, str string) error {
+	err := WriteVarInt(w, len(str))
 	if err != nil {
 		return err
 	}
 
-	_, err = b.Write([]byte(str))
+	_, err = w.Write([]byte(str))
 	return err
 }
