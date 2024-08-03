@@ -62,6 +62,7 @@ func (c *connection) writeLoginSuccess() (err error) {
 		return
 	}
 
+	// Strict Error Handling
 	err = p.WriteBool(true)
 	if err != nil {
 		return

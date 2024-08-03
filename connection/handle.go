@@ -108,12 +108,12 @@ func (c *connection) handleLegacyServerListPing() (bool, error) {
 	}
 
 	info := []string{
-		"§1",
-		"47",
-		"Greater than 1.7 pls",
-		"MCBuild Server",
-		"0",
-		"20",
+		"§1", // Always Required
+		"47", // Protocol Version
+		"Greater than 1.7 pls", // Version
+		"MCBuild Server", // Server Name
+		"0", // Online Players
+		"20", // Max Players
 	}
 
 	response := make([]byte, 0)
