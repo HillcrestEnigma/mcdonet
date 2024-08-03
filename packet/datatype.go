@@ -36,47 +36,47 @@ func (p *Packet) WriteJSON(obj any) (err error) {
 
 
 func (p *Packet) ReadUInt8() (uint8, error) {
-	return datatype.ReadUInt8(p)
+	return datatype.ReadInt[uint8](p)
 }
 
 func (p *Packet) WriteUInt8(value uint8) error {
-	return datatype.WriteUInt8(p, value)
+	return datatype.WriteInt(p, value)
 }
 
 
 func (p *Packet) ReadInt8() (int8, error) {
-	return datatype.ReadInt8(p)
+	return datatype.ReadInt[int8](p)
 }
 
 func (p *Packet) WriteInt8(value int8) error {
-	return datatype.WriteInt8(p, value)
+	return datatype.WriteInt(p, value)
 }
 
 
 func (p *Packet) ReadUInt16() (uint16, error) {
-	return datatype.ReadUInt16(p)
+	return datatype.ReadInt[uint16](p)
 }
 
 func (p *Packet) WriteUInt16(value uint16) error {
-	return datatype.WriteUInt16(p, value)
+	return datatype.WriteInt(p, value)
 }
 
 
 func (p *Packet) ReadInt32() (int32, error) {
-	return datatype.ReadInt32(p)
+	return datatype.ReadInt[int32](p)
 }
 
 func (p *Packet) WriteInt32(value int32) error {
-	return datatype.WriteInt32(p, value)
+	return datatype.WriteInt(p, value)
 }
 
 
 func (p *Packet) ReadInt64() (int64, error) {
-	return datatype.ReadInt64(p)
+	return datatype.ReadInt[int64](p)
 }
 
 func (p *Packet) WriteInt64(value int64) error {
-	return datatype.WriteInt64(p, value)
+	return datatype.WriteInt(p, value)
 }
 
 
