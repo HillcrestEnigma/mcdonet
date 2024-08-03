@@ -2,12 +2,12 @@ package datatype
 
 import "io"
 
-type Reader interface {
+type reader interface {
 	io.Reader
 	io.ByteReader
 }
 
-type Writer interface {
+type writer interface {
 	io.Writer
 	io.ByteWriter
 }

@@ -2,8 +2,8 @@ package connection
 
 import "github.com/HillcrestEnigma/mcbuild/packet"
 
-func (c *Connection) HandlePlay() (err error) {
-	err = c.WriteLoginPlay()
+func (c *connection) handlePlay() (err error) {
+	err = c.writeLoginPlay()
 	if err != nil {
 		return
 	}
@@ -11,10 +11,10 @@ func (c *Connection) HandlePlay() (err error) {
 	return
 }
 
-func (c *Connection) WriteLoginPlay() (err error) {
+func (c *connection) writeLoginPlay() (err error) {
 	p := packet.NewPacket(0x2B)
 
 	// TODO: implement
 
-	return c.WritePacket(p)
+	return c.writePacket(p)
 }

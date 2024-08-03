@@ -1,6 +1,6 @@
 package datatype
 
-func ReadUInt16(r Reader) (uint16, error) {
+func ReadUInt16(r reader) (uint16, error) {
 	buf := make([]byte, 2)
 	_, err := r.Read(buf)
 	if err != nil {

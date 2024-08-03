@@ -6,7 +6,7 @@ import (
 	"unicode/utf16"
 )
 
-func (c *Connection) HandleLegacyServerListPing() (bool, error) {
+func (c *connection) handleLegacyServerListPing() (bool, error) {
 	sig, err := c.buf.Peek(3)
 	if err != nil {
 		return false, err

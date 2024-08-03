@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func ReadUUID(r Reader) (value uuid.UUID, err error) {
+func ReadUUID(r reader) (value uuid.UUID, err error) {
 	buf := make([]byte, 16)
 
 	_, err = r.Read(buf)
@@ -16,7 +16,7 @@ func ReadUUID(r Reader) (value uuid.UUID, err error) {
 	return
 }
 
-func WriteUUID(w Writer, value uuid.UUID) (err error) {
+func WriteUUID(w writer, value uuid.UUID) (err error) {
 	bin, err := value.MarshalBinary()
 	if err != nil {
 		return

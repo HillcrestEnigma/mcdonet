@@ -2,27 +2,27 @@ package connection
 
 import "github.com/HillcrestEnigma/mcbuild/packet"
 
-func (c *Connection) HandleLogin() (err error) {
-	err = c.ReadLoginStart()
+func (c *connection) handleLogin() (err error) {
+	err = c.readLoginStart()
 	if err != nil {
 		return
 	}
 
-	err = c.WriteLoginSuccess()
+	err = c.writeLoginSuccess()
 	if err != nil {
 		return
 	}
 
-	err = c.ReadLoginAck()
+	err = c.readLoginAck()
 	if err != nil {
 		return
 	}
 
-	return c.HandleConfiguration()
+	return c.handleConfiguration()
 }
 
-func (c *Connection) ReadLoginStart() (err error) {
-	p, err := c.ReadPacket(0x00)
+func (c *connection) readLoginStart() (err error) {
+	p, err := c.readPacket(0x00)
 	if err != nil {
 		return
 	}
@@ -37,14 +37,14 @@ func (c *Connection) ReadLoginStart() (err error) {
 		return
 	}
 
-	c.player = &ConnectionPlayer{
+	c.player = &connectionPlayer{
 		Username: username,
 		UUID:     id,
 	}
 	return
 }
 
-func (c *Connection) WriteLoginSuccess() (err error) {
+func (c *connection) writeLoginSuccess() (err error) {
 	p := packet.NewPacket(0x02)
 
 	err = p.WriteUUID(c.player.UUID)
@@ -67,11 +67,11 @@ func (c *Connection) WriteLoginSuccess() (err error) {
 		return
 	}
 
-	return c.WritePacket(p)
+	return c.writePacket(p)
 }
 
-func (c *Connection) ReadLoginAck() (err error) {
-	_, err = c.ReadPacket(0x03)
+func (c *connection) readLoginAck() (err error) {
+	_, err = c.readPacket(0x03)
 	if err != nil {
 		return
 	}

@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
-	"log"
 	"net"
 	"slices"
 
@@ -14,60 +12,22 @@ import (
 	"github.com/google/uuid"
 )
 
-type ConnectionPlayer struct {
+type connectionPlayer struct {
 	UUID     uuid.UUID
 	Username string
 }
 
-type Connection struct {
-	player *ConnectionPlayer
+type connection struct {
+	player *connectionPlayer
 	net    net.Conn
 	buf    *bufio.ReadWriter
 }
 
-func HandleConnection(netConn net.Conn) {
-	c := &Connection{
-		player: nil,
-		net:    netConn,
-		buf:    bufio.NewReadWriter(bufio.NewReader(netConn), bufio.NewWriter(netConn)),
-	}
-
-	defer c.Close()
-
-	isLegacy, err := c.HandleLegacyServerListPing()
-	if err != nil {
-		return
-	}
-	if isLegacy {
-		return
-	}
-
-	handshake, err := c.ReadHandshake()
-	if err != nil {
-		return
-	}
-
-	switch handshake.nextState {
-	case 1:
-		err = c.HandleServerListPing()
-	case 2:
-		err = c.HandleLogin()
-	}
-
-	if err != nil {
-		if err == io.EOF {
-			log.Println("Connection closed by client")
-		} else {
-			log.Println(err)
-		}
-	}
-}
-
-func (c *Connection) Close() {
+func (c *connection) close() {
 	c.net.Close()
 }
 
-func (c *Connection) ReadPacket(allowedIDs ...int) (p *packet.Packet, err error) {
+func (c *connection) readPacket(allowedIDs ...int) (p *packet.Packet, err error) {
 	length, err := datatype.ReadVarInt(c.buf)
 	if err != nil {
 		return nil, err
@@ -93,9 +53,9 @@ func (c *Connection) ReadPacket(allowedIDs ...int) (p *packet.Packet, err error)
 	return
 }
 
-func (c *Connection) AcceptPacket(acceptableIDs ...int) (p *packet.Packet, err error) {
+func (c *connection) acceptPacket(acceptableIDs ...int) (p *packet.Packet, err error) {
 	for {
-		p, err = c.ReadPacket()
+		p, err = c.readPacket()
 		if err != nil {
 			return
 		}
@@ -106,7 +66,7 @@ func (c *Connection) AcceptPacket(acceptableIDs ...int) (p *packet.Packet, err e
 	}
 }
 
-func (c *Connection) WritePacket(p *packet.Packet) (err error) {
+func (c *connection) writePacket(p *packet.Packet) (err error) {
 	var buf bytes.Buffer
 
 	err = datatype.WriteVarInt(&buf, p.Id)

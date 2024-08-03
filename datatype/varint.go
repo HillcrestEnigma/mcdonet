@@ -1,6 +1,6 @@
 package datatype
 
-func ReadVarInt(r Reader) (value int, err error) {
+func ReadVarInt(r reader) (value int, err error) {
 	for shift := 0; true; shift += 7 {
 		cur, err := r.ReadByte()
 
@@ -18,11 +18,11 @@ func ReadVarInt(r Reader) (value int, err error) {
 	return
 }
 
-func WriteVarInt(w Writer, value int) (err error) {
+func WriteVarInt(w writer, value int) (err error) {
 	for {
-		if ((value & 0x80) == 0) {
+		if (value & 0x80) == 0 {
 			w.WriteByte(byte(value))
-			return;
+			return
 		}
 
 		w.WriteByte(byte((value & 0x7F) | 0x80))

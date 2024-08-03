@@ -1,6 +1,6 @@
 package datatype
 
-func ReadString(r Reader) (string, error) {
+func ReadString(r reader) (string, error) {
 	length, err := ReadVarInt(r)
 
 	if err != nil {
@@ -16,7 +16,7 @@ func ReadString(r Reader) (string, error) {
 	return string(buf), nil
 }
 
-func WriteString(w Writer, str string) error {
+func WriteString(w writer, str string) error {
 	err := WriteVarInt(w, len(str))
 	if err != nil {
 		return err

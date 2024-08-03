@@ -6,30 +6,30 @@ import (
 	"github.com/HillcrestEnigma/mcbuild/packet"
 )
 
-type StatusResponseVersion struct {
+type statusResponseVersion struct {
 	Name     string `json:"name"`
 	Protocol int    `json:"protocol"`
 }
 
-type StatusResponse struct {
-	Version StatusResponseVersion `json:"version"`
+type statusResponse struct {
+	Version statusResponseVersion `json:"version"`
 }
 
-func (c *Connection) HandleServerListPing() error {
+func (c *connection) handleServerListPing() error {
 	for {
-		p, err := c.ReadPacket(0x00, 0x01)
+		p, err := c.readPacket(0x00, 0x01)
 		if err != nil {
 			return err
 		}
 
 		switch p.Id {
 		case 0x00:
-			err = c.HandleStatusRequest()
+			err = c.handleStatusRequest()
 			if err != nil {
 				return err
 			}
 		case 0x01:
-			err = c.HandleStatusPing(p)
+			err = c.handleStatusPing(p)
 			if err != nil {
 				return err
 			}
@@ -40,11 +40,11 @@ func (c *Connection) HandleServerListPing() error {
 	}
 }
 
-func (c *Connection) HandleStatusRequest() (err error) {
+func (c *connection) handleStatusRequest() (err error) {
 	p := packet.NewPacket(0x00)
 
-	response := StatusResponse{
-		Version: StatusResponseVersion{
+	response := statusResponse{
+		Version: statusResponseVersion{
 			Name:     "1.21",
 			Protocol: 767,
 		},
@@ -55,10 +55,10 @@ func (c *Connection) HandleStatusRequest() (err error) {
 		return
 	}
 
-	return c.WritePacket(p)
+	return c.writePacket(p)
 }
 
-func (c *Connection) HandleStatusPing(request *packet.Packet) error {
+func (c *connection) handleStatusPing(request *packet.Packet) error {
 	payload, err := request.ReadInt64()
 	if err != nil {
 		return err
@@ -70,5 +70,5 @@ func (c *Connection) HandleStatusPing(request *packet.Packet) error {
 		return err
 	}
 
-	return c.WritePacket(response)
+	return c.writePacket(response)
 }

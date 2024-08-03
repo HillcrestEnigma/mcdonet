@@ -6,15 +6,15 @@ import (
 	"github.com/HillcrestEnigma/mcbuild/packet"
 )
 
-func (c *Connection) HandleConfiguration() (err error) {
+func (c *connection) handleConfiguration() (err error) {
 	log.Println("Write clientbound known packs")
-	err = c.WriteClientboundKnownPacks()
+	err = c.writeClientboundKnownPacks()
 	if err != nil {
 		return
 	}
 
 	log.Println("Read serverbound known packs")
-	err = c.ReadServerboundKnownPacks()
+	err = c.readServerboundKnownPacks()
 	if err != nil {
 		return
 	}
@@ -26,20 +26,20 @@ func (c *Connection) HandleConfiguration() (err error) {
 	// }
 
 	log.Println("Write finish configuration")
-	err = c.WriteFinishConfiguration()
+	err = c.writeFinishConfiguration()
 	if err != nil {
 		return
 	}
 
-	err = c.ReadAckFinishConfiguration()
+	err = c.readAckFinishConfiguration()
 	if err != nil {
 		return
 	}
 
-	return c.HandlePlay()
+	return c.handlePlay()
 }
 
-func (c *Connection) WriteClientboundKnownPacks() (err error) {
+func (c *connection) writeClientboundKnownPacks() (err error) {
 	p := packet.NewPacket(0x0E)
 
 	err = p.WriteVarInt(1)
@@ -63,12 +63,12 @@ func (c *Connection) WriteClientboundKnownPacks() (err error) {
 		return
 	}
 
-	return c.WritePacket(p)
+	return c.writePacket(p)
 }
 
 // TODO: Technically we can just omit this function and choose to drop this packet
-func (c *Connection) ReadServerboundKnownPacks() (err error) {
-	p, err := c.AcceptPacket(0x07)
+func (c *connection) readServerboundKnownPacks() (err error) {
+	p, err := c.acceptPacket(0x07)
 	if err != nil {
 		return
 	}
@@ -92,31 +92,31 @@ func (c *Connection) ReadServerboundKnownPacks() (err error) {
 	return
 }
 
-func (c *Connection) WriteRegistryData() (err error) {
-	p := packet.NewPacket(0x07)
+// func (c *Connection) writeRegistryData() (err error) {
+// 	p := packet.NewPacket(0x07)
 
-	// TODO: This is probably incorrect, fix
-	err = p.WriteString("minecraft:core")
-	if err != nil {
-		return
-	}
+// 	// TODO: This is probably incorrect, fix
+// 	err = p.WriteString("minecraft:core")
+// 	if err != nil {
+// 		return
+// 	}
 
-	err = p.WriteVarInt(0)
-	if err != nil {
-		return
-	}
+// 	err = p.WriteVarInt(0)
+// 	if err != nil {
+// 		return
+// 	}
 
-	return c.WritePacket(p)
-}
+// 	return c.WritePacket(p)
+// }
 
-func (c *Connection) WriteFinishConfiguration() (err error) {
+func (c *connection) writeFinishConfiguration() (err error) {
 	p := packet.NewPacket(0x03)
 
-	return c.WritePacket(p)
+	return c.writePacket(p)
 }
 
-func (c *Connection) ReadAckFinishConfiguration() (err error) {
-	_, err = c.AcceptPacket(0x03)
+func (c *connection) readAckFinishConfiguration() (err error) {
+	_, err = c.acceptPacket(0x03)
 	if err != nil {
 		return
 	}
