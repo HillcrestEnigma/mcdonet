@@ -18,7 +18,7 @@ func (c *connection) handleLogin() (err error) {
 		return
 	}
 
-	return c.handleConfiguration()
+	return c.handleConfig()
 }
 
 func (c *connection) readLoginStart() (err error) {

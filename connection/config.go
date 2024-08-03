@@ -6,7 +6,7 @@ import (
 	"github.com/HillcrestEnigma/mcbuild/packet"
 )
 
-func (c *connection) handleConfiguration() (err error) {
+func (c *connection) handleConfig() (err error) {
 	log.Println("Write clientbound known packs")
 	err = c.writeClientboundKnownPacks()
 	if err != nil {
@@ -26,12 +26,12 @@ func (c *connection) handleConfiguration() (err error) {
 	// }
 
 	log.Println("Write finish configuration")
-	err = c.writeFinishConfiguration()
+	err = c.writeFinishConfig()
 	if err != nil {
 		return
 	}
 
-	err = c.readAckFinishConfiguration()
+	err = c.readAckFinishConfig()
 	if err != nil {
 		return
 	}
@@ -109,13 +109,13 @@ func (c *connection) readServerboundKnownPacks() (err error) {
 // 	return c.WritePacket(p)
 // }
 
-func (c *connection) writeFinishConfiguration() (err error) {
+func (c *connection) writeFinishConfig() (err error) {
 	p := packet.NewPacket(0x03)
 
 	return c.writePacket(p)
 }
 
-func (c *connection) readAckFinishConfiguration() (err error) {
+func (c *connection) readAckFinishConfig() (err error) {
 	_, err = c.acceptPacket(0x03)
 	if err != nil {
 		return
