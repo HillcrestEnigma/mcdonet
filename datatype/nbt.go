@@ -29,12 +29,36 @@ func ReadNBT(r reader) (val *NBT, err error) {
 	}
 
 	val = &NBT{Name: name, Compound: compound.(*nbtCompound)}
+	return
+}
 
+func ReadNetworkNBT(r reader) (val *NBT, err error) {
+	typeID, err := ReadNumber[int8](r)
+	if err != nil {
+		return
+	}
+
+	compound, err := readNBTPayload(r, typeID)
+	if err != nil {
+		return
+	}
+
+	val = &NBT{Name: "", Compound: compound.(*nbtCompound)}
 	return
 }
 
 func WriteNBT(w writer, val *NBT) (err error) {
 	err = writeNBTHeader(w, 10, val.Name)
+	if err != nil {
+		return
+	}
+
+	err = writeNBTPayload(w, val.Compound)
+	return
+}
+
+func WriteNetworkNBT(w writer, val *NBT) (err error) {
+	err = WriteNumber(w, int8(10))
 	if err != nil {
 		return
 	}
