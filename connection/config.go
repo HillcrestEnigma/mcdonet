@@ -43,7 +43,7 @@ func (c *connection) writeClientboundKnownPacks() (err error) {
 	}
 
 	// Pack Namespace
-	err = p.WriteString("minecraft:core")
+	err = p.WriteString("minecraft")
 	if err != nil {
 		return
 	}
