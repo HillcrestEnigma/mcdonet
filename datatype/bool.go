@@ -1,6 +1,6 @@
 package datatype
 
-func ReadBool(r reader) (val bool, err error) {
+func ReadBool(r Reader) (val bool, err error) {
 	b, err := r.ReadByte()
 
 	if err != nil {
@@ -11,7 +11,7 @@ func ReadBool(r reader) (val bool, err error) {
 	return
 }
 
-func WriteBool(w writer, val bool) (err error) {
+func WriteBool(w Writer, val bool) (err error) {
 	if val {
 		err = w.WriteByte(1)
 	} else {

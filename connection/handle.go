@@ -12,10 +12,10 @@ import (
 )
 
 type handshake struct {
-	protoVer   int
+	protoVer   int32
 	serverAddr string
 	serverPort uint16
-	nextState  int
+	nextState  int32
 }
 
 func HandleConnection(netConn net.Conn) {

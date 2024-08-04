@@ -1,9 +1,13 @@
 package datatype
 
-import "github.com/google/uuid"
+import (
+	"io"
 
-func ReadString(r reader) (string, error) {
-	length, err := ReadVarInt(r)
+	"github.com/google/uuid"
+)
+
+func ReadString(r Reader) (string, error) {
+	_, length, err := ReadVarInt(r)
 
 	if err != nil {
 		return "", err
@@ -12,8 +16,8 @@ func ReadString(r reader) (string, error) {
 	return readRawString(r, length)
 }
 
-func WriteString(w writer, str string) error {
-	err := WriteVarInt(w, len(str))
+func WriteString(w Writer, str string) error {
+	err := WriteVarInt(w, int32(len(str)))
 	if err != nil {
 		return err
 	}
@@ -22,7 +26,7 @@ func WriteString(w writer, str string) error {
 	return err
 }
 
-func ReadUUID(r reader) (val uuid.UUID, err error) {
+func ReadUUID(r Reader) (val uuid.UUID, err error) {
 	buf := make([]byte, 16)
 
 	_, err = r.Read(buf)
@@ -34,7 +38,7 @@ func ReadUUID(r reader) (val uuid.UUID, err error) {
 	return
 }
 
-func WriteUUID(w writer, val uuid.UUID) (err error) {
+func WriteUUID(w Writer, val uuid.UUID) (err error) {
 	bin, err := val.MarshalBinary()
 	if err != nil {
 		return
@@ -48,9 +52,9 @@ func WriteUUID(w writer, val uuid.UUID) (err error) {
 	return
 }
 
-func readRawString(r reader, length int) (string, error) {
+func readRawString(r Reader, length int32) (string, error) {
 	buf := make([]byte, length)
-	_, err := r.Read(buf)
+	_, err := io.ReadFull(r, buf)
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +62,7 @@ func readRawString(r reader, length int) (string, error) {
 	return string(buf), nil
 }
 
-func writeRawString(w writer, str string) error {
+func writeRawString(w Writer, str string) error {
 	_, err := w.Write([]byte(str))
 	return err
 }

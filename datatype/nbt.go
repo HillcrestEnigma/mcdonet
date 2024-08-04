@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-type nbtList []any
-type nbtCompound map[string]any
+type NBTList []any
+type NBTCompound map[string]any
 
 type NBT struct {
 	Name     string
-	Compound *nbtCompound
+	Compound *NBTCompound
 }
 
-func ReadNBT(r reader) (val *NBT, err error) {
+func ReadNBT(r Reader) (val *NBT, err error) {
 	typeID, name, err := readNBTHeader(r)
 	if err != nil {
 		return
@@ -28,11 +28,11 @@ func ReadNBT(r reader) (val *NBT, err error) {
 		return
 	}
 
-	val = &NBT{Name: name, Compound: compound.(*nbtCompound)}
+	val = &NBT{Name: name, Compound: compound.(*NBTCompound)}
 	return
 }
 
-func ReadNetworkNBT(r reader) (val *NBT, err error) {
+func ReadNetworkNBT(r Reader) (val *NBT, err error) {
 	typeID, err := ReadNumber[int8](r)
 	if err != nil {
 		return
@@ -43,11 +43,11 @@ func ReadNetworkNBT(r reader) (val *NBT, err error) {
 		return
 	}
 
-	val = &NBT{Name: "", Compound: compound.(*nbtCompound)}
+	val = &NBT{Name: "", Compound: compound.(*NBTCompound)}
 	return
 }
 
-func WriteNBT(w writer, val *NBT) (err error) {
+func WriteNBT(w Writer, val *NBT) (err error) {
 	err = writeNBTHeader(w, 10, val.Name)
 	if err != nil {
 		return
@@ -57,7 +57,7 @@ func WriteNBT(w writer, val *NBT) (err error) {
 	return
 }
 
-func WriteNetworkNBT(w writer, val *NBT) (err error) {
+func WriteNetworkNBT(w Writer, val *NBT) (err error) {
 	err = WriteNumber(w, int8(10))
 	if err != nil {
 		return
@@ -67,7 +67,7 @@ func WriteNetworkNBT(w writer, val *NBT) (err error) {
 	return
 }
 
-func readNBTHeader(r reader) (typeID int8, name string, err error) {
+func readNBTHeader(r Reader) (typeID int8, name string, err error) {
 	typeID, err = ReadNumber[int8](r)
 	if err != nil {
 		return
@@ -84,7 +84,7 @@ func readNBTHeader(r reader) (typeID int8, name string, err error) {
 	return
 }
 
-func writeNBTHeader(w writer, typeID int8, name string) (err error) {
+func writeNBTHeader(w Writer, typeID int8, name string) (err error) {
 	err = WriteNumber(w, typeID)
 	if err != nil {
 		return
@@ -101,7 +101,7 @@ func writeNBTHeader(w writer, typeID int8, name string) (err error) {
 	return
 }
 
-func readNBTPayload(r reader, typeID int8) (val any, err error) {
+func readNBTPayload(r Reader, typeID int8) (val any, err error) {
 	switch typeID {
 	case 1:
 		val, err = ReadNumber[int8](r)
@@ -141,7 +141,7 @@ func readNBTPayload(r reader, typeID int8) (val any, err error) {
 			return nil, err
 		}
 
-		list := make(nbtList, length)
+		list := make(NBTList, length)
 		for i := int32(0); i < length; i++ {
 			item, err := readNBTPayload(r, listTypeID)
 			if err != nil {
@@ -153,7 +153,7 @@ func readNBTPayload(r reader, typeID int8) (val any, err error) {
 
 		val = &list
 	case 10:
-		compound := make(nbtCompound)
+		compound := make(NBTCompound)
 		for {
 			typeID, name, err := readNBTHeader(r)
 			if err != nil {
@@ -213,7 +213,7 @@ func readNBTPayload(r reader, typeID int8) (val any, err error) {
 	return
 }
 
-func writeNBTPayload(w writer, val any) (err error) {
+func writeNBTPayload(w Writer, val any) (err error) {
 	typeID, err := getTypeIDFromType(val)
 	if err != nil {
 		return
@@ -244,7 +244,7 @@ func writeNBTPayload(w writer, val any) (err error) {
 	case 8:
 		err = writeNBTString(w, val.(string))
 	case 9:
-		list := val.(*nbtList)
+		list := val.(*NBTList)
 
 		var listTypeID int8 = 0
 		if len(*list) > 0 {
@@ -271,7 +271,7 @@ func writeNBTPayload(w writer, val any) (err error) {
 			}
 		}
 	case 10:
-		compound := val.(*nbtCompound)
+		compound := val.(*NBTCompound)
 
 		for name, item := range *compound {
 			itemTypeID, err := getTypeIDFromType(item)
@@ -326,16 +326,16 @@ func writeNBTPayload(w writer, val any) (err error) {
 	return
 }
 
-func readNBTString(r reader) (val string, err error) {
+func readNBTString(r Reader) (val string, err error) {
 	length, err := ReadNumber[int16](r)
 	if err != nil {
 		return
 	}
 
-	return readRawString(r, int(length))
+	return readRawString(r, int32(length))
 }
 
-func writeNBTString(w writer, val string) (err error) {
+func writeNBTString(w Writer, val string) (err error) {
 	err = WriteNumber(w, int16(len(val)))
 	if err != nil {
 		return
@@ -362,9 +362,9 @@ func getTypeIDFromType(val any) (typeID int8, err error) {
 		typeID = 7
 	case string:
 		typeID = 8
-	case *nbtList:
+	case *NBTList:
 		typeID = 9
-	case *nbtCompound:
+	case *NBTCompound:
 		typeID = 10
 	case *[]int32:
 		typeID = 11
@@ -431,7 +431,7 @@ func nbtStringWithIndent(name string, val any, indentLevel int) (str string, err
 	case 8:
 		str += fmtTagHeader("String", name) + fmt.Sprintf("'%s'", val.(string))
 	case 9:
-		list := val.(*nbtList)
+		list := val.(*NBTList)
 
 		str += fmtTagHeader("List", name) + fmt.Sprintf("%d ", len(*list))
 		str += pluralize(len(*list), "entry", "entries") + "\n" + indent(indentLevel) + "{\n"
@@ -446,7 +446,7 @@ func nbtStringWithIndent(name string, val any, indentLevel int) (str string, err
 
 		str += indent(indentLevel) + "}"
 	case 10:
-		compound := val.(*nbtCompound)
+		compound := val.(*NBTCompound)
 
 		str += fmtTagHeader("Compound", name) + fmt.Sprintf("%d ", len(*compound))
 		str += pluralize(len(*compound), "entry", "entries") + "\n" + indent(indentLevel) + "{\n"

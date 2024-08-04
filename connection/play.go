@@ -1,6 +1,10 @@
 package connection
 
-import "github.com/HillcrestEnigma/mcbuild/packet"
+import (
+	"log"
+
+	"github.com/HillcrestEnigma/mcbuild/packet"
+)
 
 func (c *connection) handlePlay() (err error) {
 	err = c.writeLoginPlay()
@@ -12,6 +16,7 @@ func (c *connection) handlePlay() (err error) {
 }
 
 func (c *connection) writeLoginPlay() (err error) {
+	log.Println("Write login play")
 	p := packet.NewPacket(0x2B)
 
 	// Player Entity ID
@@ -21,25 +26,25 @@ func (c *connection) writeLoginPlay() (err error) {
 	}
 
 	// Gamemode is Hardcore
-	err = p.WriteBool(false) 
+	err = p.WriteBool(false)
 	if err != nil {
 		return
 	}
 
 	// Dimension Count Array
-	err = p.WriteVarInt(1) 
+	err = p.WriteVarInt(1)
 	if err != nil {
 		return
 	}
 
 	// Dimension Identifier
-	err = p.WriteString("minecraft:overworld") 
+	err = p.WriteString("minecraft:overworld")
 	if err != nil {
 		return
 	}
 
 	// Max Players
-	err = p.WriteVarInt(20) 
+	err = p.WriteVarInt(20)
 	if err != nil {
 		return
 	}

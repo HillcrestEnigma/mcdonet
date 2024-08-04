@@ -1,4 +1,4 @@
-package datatype
+package datatype_test
 
 import (
 	"bufio"
@@ -7,9 +7,11 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/HillcrestEnigma/mcbuild/datatype"
 )
 
-func openFile(t testing.TB, filename string) (r reader, file *os.File) {
+func openFile(t testing.TB, filename string) (r datatype.Reader, file *os.File) {
 	t.Helper()
 
 	file, err := os.Open(filepath.Join("testdata", filename))
@@ -21,13 +23,13 @@ func openFile(t testing.TB, filename string) (r reader, file *os.File) {
 	return
 }
 
-func openNBT(t testing.TB, filename string) (nbt *NBT) {
+func openNBT(t testing.TB, filename string) (nbt *datatype.NBT) {
 	t.Helper()
 
 	r, f := openFile(t, filename)
 	defer f.Close()
 
-	nbt, err := ReadNBT(r)
+	nbt, err := datatype.ReadNBT(r)
 	if err != nil {
 		t.Fatalf("Error reading NBT: %v", err)
 	}
@@ -35,7 +37,7 @@ func openNBT(t testing.TB, filename string) (nbt *NBT) {
 	return
 }
 
-func assertReadNBTMatchesExpected(t testing.TB, filename string, expected *NBT) {
+func assertReadNBTMatchesExpected(t testing.TB, filename string, expected *datatype.NBT) {
 	t.Helper()
 
 	got := openNBT(t, filename)
@@ -48,21 +50,15 @@ func assertReadNBTMatchesExpected(t testing.TB, filename string, expected *NBT) 
 func assertWriteNBTMatchesReadNBT(t testing.TB, filename string) {
 	t.Helper()
 
-	r, f := openFile(t, filename)
-	defer f.Close()
-
-	original, err := ReadNBT(r)
-	if err != nil {
-		t.Fatalf("Error reading NBT: %v", err)
-	}
+	original := openNBT(t, filename)
 
 	var written bytes.Buffer
-	err = WriteNBT(&written, original)
+	err := datatype.WriteNBT(&written, original)
 	if err != nil {
 		t.Fatalf("Error writing NBT: %v", err)
 	}
 
-	reread, err := ReadNBT(&written)
+	reread, err := datatype.ReadNBT(&written)
 	if err != nil {
 		t.Fatalf("Error reading NBT: %v", err)
 	}
@@ -72,11 +68,32 @@ func assertWriteNBTMatchesReadNBT(t testing.TB, filename string) {
 	}
 }
 
+func assertWriteNetworkNBTMatchesReadNetworkNBT(t testing.TB, filename string) {
+	t.Helper()
+
+	original := openNBT(t, filename)
+
+	var written bytes.Buffer
+	err := datatype.WriteNetworkNBT(&written, original)
+	if err != nil {
+		t.Fatalf("Error writing Network NBT: %v", err)
+	}
+
+	reread, err := datatype.ReadNetworkNBT(&written)
+	if err != nil {
+		t.Fatalf("Error reading Network NBT: %v", err)
+	}
+
+	if !reflect.DeepEqual(reread.Compound, original.Compound) {
+		t.Errorf("Got Network NBT %+v, expected %+v", reread.Compound, original.Compound)
+	}
+}
+
 func TestReadNBT(t *testing.T) {
 	t.Run("helloworld.nbt", func(t *testing.T) {
-		expected := &NBT{
+		expected := &datatype.NBT{
 			Name: "hello world",
-			Compound: &nbtCompound{
+			Compound: &datatype.NBTCompound{
 				"name": "Bananrama",
 			},
 		}
@@ -85,15 +102,15 @@ func TestReadNBT(t *testing.T) {
 	})
 
 	t.Run("bigtest.nbt", func(t *testing.T) {
-		expected := &NBT{
+		expected := &datatype.NBT{
 			Name: "Level",
-			Compound: &nbtCompound{
-				"nested compound test": &nbtCompound{
-					"egg": &nbtCompound{
+			Compound: &datatype.NBTCompound{
+				"nested compound test": &datatype.NBTCompound{
+					"egg": &datatype.NBTCompound{
 						"name":  "Eggbert",
 						"value": float32(0.5),
 					},
-					"ham": &nbtCompound{
+					"ham": &datatype.NBTCompound{
 						"name":  "Hampus",
 						"value": float32(0.75),
 					},
@@ -101,7 +118,7 @@ func TestReadNBT(t *testing.T) {
 				"intTest":    int32(2147483647),
 				"byteTest":   int8(127),
 				"stringTest": "HELLO WORLD THIS IS A TEST STRING ÅÄÖ!",
-				"listTest (long)": &nbtList{
+				"listTest (long)": &datatype.NBTList{
 					int64(11),
 					int64(12),
 					int64(13),
@@ -111,12 +128,12 @@ func TestReadNBT(t *testing.T) {
 				"doubleTest": float64(0.49312871321823148),
 				"floatTest":  float32(0.49823147058486938),
 				"longTest":   int64(9223372036854775807),
-				"listTest (compound)": &nbtList{
-					&nbtCompound{
+				"listTest (compound)": &datatype.NBTList{
+					&datatype.NBTCompound{
 						"created-on": int64(1264099775885),
 						"name":       "Compound tag #0",
 					},
-					&nbtCompound{
+					&datatype.NBTCompound{
 						"created-on": int64(1264099775885),
 						"name":       "Compound tag #1",
 					},
@@ -139,5 +156,15 @@ func TestWriteNBT(t *testing.T) {
 
 	t.Run("bigtest.nbt", func(t *testing.T) {
 		assertWriteNBTMatchesReadNBT(t, "bigtest.nbt")
+	})
+}
+
+func TestNetworkNBT(t *testing.T) {
+	t.Run("helloworld.nbt", func(t *testing.T) {
+		assertWriteNetworkNBTMatchesReadNetworkNBT(t, "helloworld.nbt")
+	})
+
+	t.Run("bigtest.nbt", func(t *testing.T) {
+		assertWriteNetworkNBTMatchesReadNetworkNBT(t, "bigtest.nbt")
 	})
 }
