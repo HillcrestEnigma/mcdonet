@@ -2,7 +2,7 @@ package datatype
 
 import (
 	"fmt"
-	"log"
+	"strings"
 )
 
 type nbtList []any
@@ -80,13 +80,11 @@ func readNBTHeader(r reader) (typeID int8, name string, err error) {
 	if err != nil {
 		return
 	}
-	log.Println("readNBTHeader", typeID, name)
 
 	return
 }
 
 func writeNBTHeader(w writer, typeID int8, name string) (err error) {
-	log.Println("writeNBTHeader", typeID, name)
 	err = WriteNumber(w, typeID)
 	if err != nil {
 		return
@@ -104,7 +102,6 @@ func writeNBTHeader(w writer, typeID int8, name string) (err error) {
 }
 
 func readNBTPayload(r reader, typeID int8) (val any, err error) {
-	log.Println("readNBTPayload", typeID)
 	switch typeID {
 	case 1:
 		val, err = ReadNumber[int8](r)
@@ -217,7 +214,6 @@ func readNBTPayload(r reader, typeID int8) (val any, err error) {
 }
 
 func writeNBTPayload(w writer, val any) (err error) {
-	log.Println("writeNBTPayload")
 	typeID, err := getTypeIDFromType(val)
 	if err != nil {
 		return
@@ -278,7 +274,6 @@ func writeNBTPayload(w writer, val any) (err error) {
 		compound := val.(*nbtCompound)
 
 		for name, item := range *compound {
-			log.Println("compound item")
 			itemTypeID, err := getTypeIDFromType(item)
 			if err != nil {
 				return err
@@ -296,7 +291,6 @@ func writeNBTPayload(w writer, val any) (err error) {
 		}
 
 		err = w.WriteByte(0x00)
-		log.Println("write compound end")
 	case 11:
 		array := val.([]int32)
 
@@ -342,7 +336,6 @@ func readNBTString(r reader) (val string, err error) {
 }
 
 func writeNBTString(w writer, val string) (err error) {
-	log.Println("writeNBTString", val)
 	err = WriteNumber(w, int16(len(val)))
 	if err != nil {
 		return
@@ -382,7 +375,102 @@ func getTypeIDFromType(val any) (typeID int8, err error) {
 		err = fmt.Errorf("unknown NBT type: %T", val)
 	}
 
-	log.Println("getTypeIDFromType", val, typeID)
+	return
+}
+
+func (nbt *NBT) String() (str string) {
+	str, _ = nbtStringWithIndent(nbt.Name, nbt.Compound, 0)
+
+	return
+}
+
+func nbtStringWithIndent(name string, val any, indentLevel int) (str string, err error) {
+	indent := func(level int) string {
+		return strings.Repeat("  ", level)
+	}
+
+	pluralize := func(count int, singular, plural string) string {
+		if count == 1 {
+			return singular
+		} else {
+			return plural
+		}
+	}
+
+	fmtTagHeader := func(typeName string, name string) string {
+		if name == "" {
+			name = "None"
+		} else {
+			name = fmt.Sprintf("'%s'", name)
+		}
+
+		return fmt.Sprintf("TAG_%s(%s): ", typeName, name)
+	}
+
+	typeID, err := getTypeIDFromType(val)
+
+	str = strings.Repeat("  ", indentLevel)
+
+	switch typeID {
+	case 1:
+		str += fmtTagHeader("Byte", name) + fmt.Sprintf("%d", val.(int8))
+	case 2:
+		str += fmtTagHeader("Short", name) + fmt.Sprintf("%d", val.(int16))
+	case 3:
+		str += fmtTagHeader("Int", name) + fmt.Sprintf("%d", val.(int32))
+	case 4:
+		str += fmtTagHeader("Long", name) + fmt.Sprintf("%dL", val.(int64))
+	case 5:
+		str += fmtTagHeader("Float", name) + fmt.Sprintf("%f", val.(float32))
+	case 6:
+		str += fmtTagHeader("Double", name) + fmt.Sprintf("%f", val.(float64))
+	case 7:
+		length := len(*val.(*[]byte))
+		str += fmtTagHeader("Byte_Array", name)
+		str += fmt.Sprintf("[%d %s]", length, pluralize(length, "byte", "bytes"))
+	case 8:
+		str += fmtTagHeader("String", name) + fmt.Sprintf("'%s'", val.(string))
+	case 9:
+		list := val.(*nbtList)
+
+		str += fmtTagHeader("List", name) + fmt.Sprintf("%d ", len(*list))
+		str += pluralize(len(*list), "entry", "entries") + "\n" + indent(indentLevel) + "{\n"
+		for _, item := range *list {
+			itemStr, err := nbtStringWithIndent("", item, indentLevel+1)
+			if err != nil {
+				return "", err
+			}
+
+			str += itemStr + "\n"
+		}
+
+		str += indent(indentLevel) + "}"
+	case 10:
+		compound := val.(*nbtCompound)
+
+		str += fmtTagHeader("Compound", name) + fmt.Sprintf("%d ", len(*compound))
+		str += pluralize(len(*compound), "entry", "entries") + "\n" + indent(indentLevel) + "{\n"
+		for name, item := range *compound {
+			itemStr, err := nbtStringWithIndent(name, item, indentLevel+1)
+			if err != nil {
+				return "", err
+			}
+
+			str += itemStr + "\n"
+		}
+
+		str += indent(indentLevel) + "}"
+	case 11:
+		array := val.([]int32)
+		str += fmtTagHeader("Int_Array", name) + fmt.Sprintf("%v", array)
+	case 12:
+		array := val.([]int64)
+		str += fmtTagHeader("Long_Array", name) + fmt.Sprintf("%v", array)
+	default:
+		str += fmtTagHeader("Invalid", name) + fmt.Sprintf("%v", val)
+
+		err = fmt.Errorf("unknown NBT type ID: %d", typeID)
+	}
 
 	return
 }
