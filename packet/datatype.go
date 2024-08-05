@@ -73,6 +73,14 @@ func (p *Packet) WriteInt64(val int64) error {
 	return datatype.WriteNumber(p, val)
 }
 
+func (p *Packet) ReadFloat32() (float32, error) {
+	return datatype.ReadNumber[float32](p)
+}
+
+func (p *Packet) WriteFloat32(val float32) error {
+	return datatype.WriteNumber(p, val)
+}
+
 func (p *Packet) ReadUUID() (uuid.UUID, error) {
 	return datatype.ReadUUID(p)
 }

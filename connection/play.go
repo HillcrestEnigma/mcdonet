@@ -3,6 +3,7 @@ package connection
 import (
 	"log"
 
+	"github.com/HillcrestEnigma/mcbuild/datatype"
 	"github.com/HillcrestEnigma/mcbuild/packet"
 )
 
@@ -12,12 +13,15 @@ func (c *connection) handlePlay() (err error) {
 		return
 	}
 
+	// 13 = Start waiting for level chunks
+	err = c.writeGameEvent(13, 0)
+
 	return
 }
 
 func (c *connection) writeLoginPlay() (err error) {
 	log.Println("Write login play")
-	p := packet.NewPacket(0x2B)
+	p := packet.NewPacket(0x2b)
 
 	// Player Entity ID
 	err = p.WriteInt32(0)
@@ -136,6 +140,97 @@ func (c *connection) writeLoginPlay() (err error) {
 
 	// Enforces Secure Chat
 	err = p.WriteBool(false)
+	if err != nil {
+		return
+	}
+
+	return c.writePacket(p)
+}
+
+func (c *connection) writeGameEvent(event uint8, value float32) (err error) {
+	p := packet.NewPacket(0x22)
+
+	// Event
+	err = p.WriteUInt8(event)
+	if err != nil {
+		return
+	}
+
+	// Value
+	err = p.WriteFloat32(value)
+	if err != nil {
+		return
+	}
+
+	return c.writePacket(p)
+}
+
+func (c *connection) writeChunkDataAndUpdateLight() (err error) {
+	p := packet.NewPacket(0x27)
+
+	// Chunk X
+	err = p.WriteInt32(0)
+	if err != nil {
+		return
+	}
+
+	// Chunk Z
+	err = p.WriteInt32(0)
+	if err != nil {
+		return
+	}
+
+	// Heightmaps
+	heightmap := make([]int64, 16*16)
+	for i := range heightmap {
+		heightmap[i] = 65
+	}
+
+	heightmaps := &datatype.NBT{
+		Name: "",
+		Compound: &datatype.NBTCompound{
+			"MOTION_BLOCKING": &heightmap,
+			"WORLD_SURFACE":   &heightmap,
+		},
+	}
+
+	err = p.WriteNBT(heightmaps)
+	if err != nil {
+		return
+	}
+
+	// Full Chunk
+	err = p.WriteBool(true)
+	if err != nil {
+		return
+	}
+
+	// Primary Bit Mask
+	err = p.WriteVarInt(0)
+	if err != nil {
+		return
+	}
+
+	// Heightmaps
+	err = p.WriteNBT(nil)
+	if err != nil {
+		return
+	}
+
+	// Biomes
+	err = p.WriteVarInt(0)
+	if err != nil {
+		return
+	}
+
+	// Data
+	err = p.WriteVarInt(0)
+	if err != nil {
+		return
+	}
+
+	// Block Entities
+	err = p.WriteNBT(nil)
 	if err != nil {
 		return
 	}
