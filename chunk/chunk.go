@@ -1,12 +1,19 @@
 package chunk
 
+import (
+	"bytes"
+	"math"
+
+	"github.com/HillcrestEnigma/mcbuild/datatype"
+)
+
 type Chunk struct {
 	X             int32
 	Z             int32
 	min_y         int32
 	height        int32
 	heightmaps    heightmaps
-	chunkSections []*chunkSection
+	chunkSections []chunkSection
 }
 
 type ChunkBlock struct {
@@ -15,8 +22,9 @@ type ChunkBlock struct {
 	Y     int32
 }
 
+// Consider accepting a Biome object instead of a uint32
 func NewChunk(x, z, min_y, height int32) (chunk *Chunk) {
-	chunkSections := make([]*chunkSection, height/16)
+	chunkSections := make([]chunkSection, height/16)
 	for i := range chunkSections {
 		chunkSections[i] = newChunkSection()
 	}
@@ -26,7 +34,7 @@ func NewChunk(x, z, min_y, height int32) (chunk *Chunk) {
 		Z:             z,
 		min_y:         min_y,
 		height:        height,
-		heightmaps:    *newHeightmaps(),
+		heightmaps:    newHeightmaps(),
 		chunkSections: chunkSections,
 	}
 	return
@@ -51,39 +59,39 @@ func (c *Chunk) SetBlock(sectionX uint8, y int32, sectionZ uint8, block *block) 
 	c.recomputeHeightAtSectionXZ(sectionX, y, sectionZ)
 }
 
-func (c *Chunk) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sectionZ uint8) {
-	startY := modifiedY
-	for i := 0; i < 3; i++ {
-		startY = max(startY, c.heightmaps[i].get(sectionX, sectionZ))
+func WriteNetworkChunk(w datatype.Writer, c *Chunk) (err error) {
+	err = datatype.WriteNumber(w, c.X)
+	if err != nil {
+		return
 	}
 
-	heights := make([]int32, 3)
-	var foundHeights byte // Stores if the correct height for each heightmap type has been found
-	// 0, 0x01: WORLD_SURFACE
-	// 1, 0x02: OCEAN_FLOOR
-	// 2, 0x04: MOTION_BLOCKING
+	datatype.WriteNumber(w, c.Z)
+	if err != nil {
+		return
+	}
 
-	for y := startY; y >= 0; y-- {
-		block := c.GetBlock(sectionX, y, sectionZ)
+	heightmapsBPE := uint8(math.Ceil(math.Log2(float64(c.height + 1))))
+	heightmapsNBT := datatype.NBT{
+		Name: "Heightmaps",
+		Compound: datatype.NBTCompound{
+			"WORLD_SURFACE":             datatype.PackIntoLongArray(heightmapsBPE, c.heightmaps[0]),
+			"OCEAN_FLOOR":               datatype.PackIntoLongArray(heightmapsBPE, c.heightmaps[1]),
+			"MOTION_BLOCKING":           datatype.PackIntoLongArray(heightmapsBPE, c.heightmaps[2]),
+			"MOTION_BLOCKING_NO_LEAVES": datatype.PackIntoLongArray(heightmapsBPE, c.heightmaps[3]),
+		},
+	}
+	err = datatype.WriteNetworkNBT(w, heightmapsNBT)
 
-		if foundHeights&0x01 == 0 && !block.IsAir() {
-			heights[0] = y + 1
-			foundHeights |= 0x01
-		}
-		if foundHeights&0x02 == 0 && !block.IsAir() && !block.IsFluid() {
-			heights[1] = y + 1
-			foundHeights |= 0x02
-		}
-		if foundHeights&0x04 == 0 && block.IsMotionBlocking() {
-			heights[2] = y + 1
-			foundHeights |= 0x04
-		}
-		if foundHeights == 0x07 {
-			break
+	var buf bytes.Buffer
+	for _, section := range c.chunkSections {
+		err = WriteChunkSection(&buf, &section)
+		if err != nil {
+			return
 		}
 	}
 
-	for i := range heights {
-		c.heightmaps[i].set(sectionX, sectionZ, heights[i])
-	}
+	datatype.WriteVarInt(w, int32(buf.Len()))
+	w.Write(buf.Bytes())
+
+	return
 }

@@ -1,9 +1,9 @@
 package connection
 
 import (
-	"log"
+	"time"
 
-	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcbuild/chunk"
 	"github.com/HillcrestEnigma/mcbuild/packet"
 )
 
@@ -14,13 +14,43 @@ func (c *connection) handlePlay() (err error) {
 	}
 
 	// 13 = Start waiting for level chunks
+	// 0 = No value for this event
 	err = c.writeGameEvent(13, 0)
+	if err != nil {
+		return
+	}
+
+	// err = c.writeChunkDataAndUpdateLight()
+	// if err != nil {
+	// 	return
+	// }
+
+	block, err := chunk.NewBlockByIdentifier("minecraft:dirt")
+	if err != nil {
+		return
+	}
+	spawn := chunk.NewChunk(0, 0, -64, 384)
+	for x := uint8(0); x < 16; x++ {
+		for z := uint8(0); z < 16; z++ {
+			spawn.SetBlock(uint8(x), 0, uint8(z), block)
+		}
+	}
+	c.writeChunkDataAndUpdateLight(spawn)
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(16, 16, -64, 384))
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(0, 16, -64, 384))
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(-16, 16, -64, 384))
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(-16, 0, -64, 384))
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(-16, -16, -64, 384))
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(0, -16, -64, 384))
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(16, -16, -64, 384))
+	c.writeChunkDataAndUpdateLight(chunk.NewChunk(16, 0, -64, 384))
+
+	time.Sleep(100 * time.Second)
 
 	return
 }
 
 func (c *connection) writeLoginPlay() (err error) {
-	log.Println("Write login play")
 	p := packet.NewPacket(0x2b)
 
 	// Player Entity ID
@@ -165,75 +195,21 @@ func (c *connection) writeGameEvent(event uint8, value float32) (err error) {
 	return c.writePacket(p)
 }
 
-func (c *connection) writeChunkDataAndUpdateLight() (err error) {
+func (c *connection) writeChunkDataAndUpdateLight(chunkData *chunk.Chunk) (err error) {
 	p := packet.NewPacket(0x27)
 
-	// Chunk X
-	err = p.WriteInt32(0)
-	if err != nil {
-		return
-	}
+	p.WriteChunk(chunkData)
 
-	// Chunk Z
-	err = p.WriteInt32(0)
-	if err != nil {
-		return
-	}
+	// TODO: implement block entity data
+	p.WriteVarInt(0)
 
-	// Heightmaps
-	heightmap := make([]int64, 16*16)
-	for i := range heightmap {
-		heightmap[i] = 65
-	}
-
-	heightmaps := &datatype.NBT{
-		Name: "",
-		Compound: &datatype.NBTCompound{
-			"MOTION_BLOCKING": &heightmap,
-			"WORLD_SURFACE":   &heightmap,
-		},
-	}
-
-	err = p.WriteNBT(heightmaps)
-	if err != nil {
-		return
-	}
-
-	// Full Chunk
-	err = p.WriteBool(true)
-	if err != nil {
-		return
-	}
-
-	// Primary Bit Mask
-	err = p.WriteVarInt(0)
-	if err != nil {
-		return
-	}
-
-	// Heightmaps
-	err = p.WriteNBT(nil)
-	if err != nil {
-		return
-	}
-
-	// Biomes
-	err = p.WriteVarInt(0)
-	if err != nil {
-		return
-	}
-
-	// Data
-	err = p.WriteVarInt(0)
-	if err != nil {
-		return
-	}
-
-	// Block Entities
-	err = p.WriteNBT(nil)
-	if err != nil {
-		return
-	}
+	// TODO: implement light data
+	p.WriteVarInt(0)
+	p.WriteVarInt(0)
+	p.WriteVarInt(0)
+	p.WriteVarInt(0)
+	p.WriteVarInt(0)
+	p.WriteVarInt(0)
 
 	return c.writePacket(p)
 }

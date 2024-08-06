@@ -16,7 +16,7 @@ var (
 type block struct {
 	Identifier   string
 	definition   map[string]any
-	blockType    string
+	BlockType    string
 	defaultState *BlockState
 	states       []*BlockState
 	properties   map[string][]string
@@ -61,7 +61,7 @@ func loadBlockStateRegistry() (err error) {
 		block := &block{
 			Identifier: identifier,
 			definition: definition,
-			blockType:  blockType,
+			BlockType:  blockType,
 			properties: blockTypeData.Properties,
 		}
 

@@ -50,6 +50,20 @@ func (b *block) IsMotionBlocking() bool {
 	return b.IsAir()
 }
 
+func (b *block) IsLeaves() bool {
+	blockInfo, err := registry.GetBlockByIdentifier(b.Identifier)
+	if err != nil {
+		panic(err)
+	}
+	
+	switch blockInfo.BlockType {
+	case "minecraft:leaves", "minecraft:cherry_leaves", "minecraft:mangrove_leaves":
+		return true
+	default:
+		return false
+	}
+}
+
 func newBlockFromBlockState(blockState *registry.BlockState) *block {
 	return &block{
 		Identifier: blockState.Block.Identifier,

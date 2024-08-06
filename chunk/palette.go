@@ -1,5 +1,9 @@
 package chunk
 
+import (
+	"github.com/HillcrestEnigma/mcbuild/datatype"
+)
+
 // data is indexed [y][z][x]
 type palettedContainer struct {
 	size    uint8 // size in one dimension
@@ -8,7 +12,7 @@ type palettedContainer struct {
 }
 
 func newPalettedContainer(size uint8, init int32) (p *palettedContainer) {
-	dataArraySize := size*size*size
+	dataArraySize := uint16(size) * uint16(size) * uint16(size)
 	p = &palettedContainer{
 		size:    size,
 		palette: make(map[int32]uint16),
@@ -17,7 +21,7 @@ func newPalettedContainer(size uint8, init int32) (p *palettedContainer) {
 	for i := range p.data {
 		p.data[i] = init
 	}
-	p.palette[init] = 0
+	p.palette[init] = uint16(dataArraySize)
 	return
 }
 
@@ -39,7 +43,7 @@ func (p *palettedContainer) set(x, y, z uint8, value int32) {
 	}
 
 	if _, ok := p.palette[value]; !ok {
-		p.palette[value]++;
+		p.palette[value]++
 	} else {
 		p.palette[value] = 1
 	}
@@ -48,5 +52,31 @@ func (p *palettedContainer) set(x, y, z uint8, value int32) {
 }
 
 func (p *palettedContainer) getDataIndex(x, y, z uint8) (index uint32) {
-	return uint32(y)*uint32(p.size)*uint32(p.size)+uint32(z)*uint32(p.size)+uint32(x)
+	size := uint32(p.size)
+	return uint32(y)*size*size + uint32(z)*size + uint32(x)
+}
+
+func WritePalettedContainer(w datatype.Writer, p *palettedContainer, bpe uint8) (err error) {
+	err = w.WriteByte(bpe)
+	if err != nil {
+		return
+	}
+
+	// TODO: implement sending the palette
+	// bpe can only be either 15 for blocks or 6 for biomes
+
+	dataArray := datatype.PackIntoLongArray(bpe, p.data)
+	err = datatype.WriteVarInt(w, int32(len(dataArray)))
+	if err != nil {
+		return
+	}
+
+	for _, val := range dataArray {
+		err = datatype.WriteNumber(w, val)
+		if err != nil {
+			return
+		}
+	}
+
+	return
 }

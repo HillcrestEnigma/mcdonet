@@ -13,6 +13,7 @@ var (
 	loadRegistryDataOnce sync.Once
 )
 
+// TODO: consider loading the generated data folder from the data generator instead
 func LoadRegistryData() (err error) {
 	loadRegistryDataOnce.Do(func() {
 		err = json.Unmarshal(loginJSONData, &Login)
