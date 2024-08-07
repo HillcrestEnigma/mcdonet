@@ -25,10 +25,13 @@ func newChunkSection() (s *chunkSection) {
 	}
 }
 
-func (s *chunkSection) block(sectionX, sectionY, sectionZ uint8) *chunkSectionBlock {
-	registryID := s.blockStates.get(sectionX, sectionY, sectionZ)
+func (s *chunkSection) block(sectionX, sectionY, sectionZ uint8) (*chunkSectionBlock, error) {
+	id, err := s.blockStates.get(sectionX, sectionY, sectionZ)
+	if err != nil {
+		return nil, err
+	}
 
-	block, err := NewBlockByRegistryID(registryID)
+	block, err := NewBlockByID(id)
 	if err != nil {
 		panic(err)
 	}
@@ -39,14 +42,17 @@ func (s *chunkSection) block(sectionX, sectionY, sectionZ uint8) *chunkSectionBl
 		SectionX:     sectionX,
 		SectionY:     sectionY,
 		SectionZ:     sectionZ,
-	}
+	}, nil
 }
 
-func (s *chunkSection) setBlock(sectionX, sectionY, sectionZ uint8, newBlock *block) {
-	oldBlock := s.block(sectionX, sectionY, sectionZ)
+func (s *chunkSection) setBlock(sectionX, sectionY, sectionZ uint8, newBlock *block) error {
+	oldBlock, err := s.block(sectionX, sectionY, sectionZ)
+	if err != nil {
+		return err
+	}
 
-	if oldBlock.Identifier == newBlock.Identifier {
-		return
+	if oldBlock.identifier == newBlock.identifier {
+		return nil
 	}
 
 	if !oldBlock.IsAir() {
@@ -56,7 +62,9 @@ func (s *chunkSection) setBlock(sectionX, sectionY, sectionZ uint8, newBlock *bl
 		s.blockCount++
 	}
 
-	s.blockStates.set(sectionX, sectionY, sectionZ, newBlock.RegistryID)
+	s.blockStates.set(sectionX, sectionY, sectionZ, newBlock.id)
+	
+	return nil
 }
 
 func (b *chunkSectionBlock) set(newBlock *block) {

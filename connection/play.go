@@ -25,14 +25,13 @@ func (c *connection) handlePlay() (err error) {
 	// 	return
 	// }
 
-	block, err := chunk.NewBlockByIdentifier("minecraft:dirt")
-	if err != nil {
-		return
-	}
 	spawn := chunk.NewChunk(0, 0, -64, 384)
 	for x := uint8(0); x < 16; x++ {
 		for z := uint8(0); z < 16; z++ {
-			spawn.SetBlock(uint8(x), 0, uint8(z), block)
+			err = spawn.SetBlock(uint8(x), 0, uint8(z), "minecraft:dirt")
+			if err != nil {
+				return
+			}
 		}
 	}
 	c.writeChunkDataAndUpdateLight(spawn)

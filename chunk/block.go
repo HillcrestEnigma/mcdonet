@@ -1,16 +1,16 @@
 package chunk
 
 import (
-	"github.com/HillcrestEnigma/mcbuild/registry"
+	"github.com/HillcrestEnigma/mcbuild/config"
 )
 
 type block struct {
-	Identifier string // block identifier, e.g. "minecraft:stone"
-	RegistryID int32  // block state registry ID, e.g. 0 -> "minecraft:air"
+	identifier string // block identifier, e.g. "minecraft:stone"
+	id         int32  // block state registry ID, e.g. 0 -> "minecraft:air"
 }
 
-func NewBlockByIdentifier(identifier string, properties ...registry.BlockStateProperties) (*block, error) {
-	blockState, err := registry.BlockStateByIdentifier(identifier, properties...)
+func NewBlockByIdentifier(identifier string, properties ...config.BlockStateProperties) (*block, error) {
+	blockState, err := config.BlockStateByIdentifier(identifier, properties...)
 	if err != nil {
 		return nil, err
 	}
@@ -18,8 +18,8 @@ func NewBlockByIdentifier(identifier string, properties ...registry.BlockStatePr
 	return newBlockFromBlockState(blockState), nil
 }
 
-func NewBlockByRegistryID(registryID int32) (*block, error) {
-	blockState, err := registry.BlockStateByRegistryID(registryID)
+func NewBlockByID(id int32) (*block, error) {
+	blockState, err := config.BlockStateByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func NewBlockByRegistryID(registryID int32) (*block, error) {
 }
 
 func (b *block) IsAir() bool {
-	switch b.Identifier {
+	switch b.identifier {
 	case "minecraft:air", "minecraft:cave_air", "minecraft:void_air":
 		return true
 	default:
@@ -37,7 +37,7 @@ func (b *block) IsAir() bool {
 }
 
 func (b *block) IsFluid() bool {
-	switch b.Identifier {
+	switch b.identifier {
 	case "minecraft:water", "minecraft:bubble_column", "minecraft:lava":
 		return true
 	default:
@@ -51,7 +51,7 @@ func (b *block) IsMotionBlocking() bool {
 }
 
 func (b *block) IsLeaves() bool {
-	blockInfo, err := registry.BlockByIdentifier(b.Identifier)
+	blockInfo, err := config.BlockDataByIdentifier(b.identifier)
 	if err != nil {
 		panic(err)
 	}
@@ -64,9 +64,9 @@ func (b *block) IsLeaves() bool {
 	}
 }
 
-func newBlockFromBlockState(blockState *registry.BlockState) *block {
+func newBlockFromBlockState(blockState *config.BlockState) *block {
 	return &block{
-		Identifier: blockState.Block.Identifier,
-		RegistryID: blockState.RegistryID,
+		identifier: blockState.Block.Identifier,
+		id:         blockState.ID,
 	}
 }

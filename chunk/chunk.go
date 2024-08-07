@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"math"
 
+	"github.com/HillcrestEnigma/mcbuild/config"
 	"github.com/HillcrestEnigma/mcbuild/datatype"
 )
 
@@ -40,23 +41,40 @@ func NewChunk(x, z, min_y, height int32) (chunk *Chunk) {
 	return
 }
 
-func (c *Chunk) Block(sectionX uint8, y int32, sectionZ uint8) *ChunkBlock {
+func (c *Chunk) Block(sectionX uint8, y int32, sectionZ uint8) (*ChunkBlock, error) {
 	sectionIndex := (y - c.min_y) / 16
 	sectionY := uint8(y % 16)
 
-	block := c.chunkSections[sectionIndex].block(sectionX, sectionY, sectionZ)
+	block, err := c.chunkSections[sectionIndex].block(sectionX, sectionY, sectionZ)
+	if err != nil {
+		return nil, err
+	}
 
 	return &ChunkBlock{
 		chunkSectionBlock: *block,
 		Chunk:             c,
 		Y:                 y,
-	}
+	}, nil
 }
 
-func (c *Chunk) SetBlock(sectionX uint8, y int32, sectionZ uint8, block *block) {
-	chunkBlock := c.Block(sectionX, y, sectionZ)
+func (c *Chunk) SetBlock(sectionX uint8, y int32, sectionZ uint8, blockIdentifier string, blockProperties ...config.BlockStateProperties) error {
+	chunkBlock, err := c.Block(sectionX, y, sectionZ)
+	if err != nil {
+		return err
+	}
+
+	block, err := NewBlockByIdentifier(blockIdentifier, blockProperties...)
+	if err != nil {
+		return err
+	}
+
 	chunkBlock.set(block)
-	c.recomputeHeightAtSectionXZ(sectionX, y, sectionZ)
+
+	err = c.recomputeHeightAtSectionXZ(sectionX, y, sectionZ)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func WriteNetworkChunk(w datatype.Writer, c *Chunk) (err error) {

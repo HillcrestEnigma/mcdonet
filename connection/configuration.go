@@ -1,11 +1,9 @@
 package connection
 
 import (
+	"github.com/HillcrestEnigma/mcbuild/config"
 	"github.com/HillcrestEnigma/mcbuild/packet"
-	"github.com/HillcrestEnigma/mcbuild/registry"
 )
-
-
 
 func (c *connection) handleConfiguration() (err error) {
 	err = c.writeClientboundKnownPacks()
@@ -98,10 +96,10 @@ func (c *connection) readServerboundKnownPacks() (err error) {
 }
 
 func (c *connection) writeRegistryData() error {
-	for registryID, entries := range registry.Login {
+	for registryIdentifier, entries := range config.RegistriesByIdentifier {
 		p := packet.NewPacket(0x07)
 
-		err := p.WriteString(registryID)
+		err := p.WriteString(registryIdentifier)
 		if err != nil {
 			return err
 		}
@@ -111,8 +109,8 @@ func (c *connection) writeRegistryData() error {
 			return err
 		}
 
-		for _, entryID := range entries {
-			err = p.WriteString(entryID)
+		for entryIdentifier := range entries {
+			err = p.WriteString(entryIdentifier)
 			if err != nil {
 				return err
 			}

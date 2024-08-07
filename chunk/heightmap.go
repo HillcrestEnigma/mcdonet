@@ -26,7 +26,7 @@ func (h *heightmap) set(x, z uint8, value int32) {
 	(*h)[z*16+x] = value
 }
 
-func (c *Chunk) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sectionZ uint8) {
+func (c *Chunk) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sectionZ uint8) error {
 	startY := modifiedY
 	for i := range c.heightmaps {
 		startY = max(startY, c.heightmaps[i].get(sectionX, sectionZ))
@@ -40,7 +40,10 @@ func (c *Chunk) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sect
 	// 3, 0x08: MOTION_BLOCKING_NO_LEAVES
 
 	for y := startY; y >= 0; y-- {
-		block := c.Block(sectionX, y, sectionZ)
+		block, err := c.Block(sectionX, y, sectionZ)
+		if err != nil {
+			return err
+		}
 
 		if foundHeights&0x01 == 0 && !block.IsAir() {
 			heights[0] = y + 1
@@ -66,4 +69,5 @@ func (c *Chunk) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sect
 	for i := range heights {
 		c.heightmaps[i].set(sectionX, sectionZ, heights[i])
 	}
+	return nil
 }

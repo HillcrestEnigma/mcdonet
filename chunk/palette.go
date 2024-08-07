@@ -1,6 +1,8 @@
 package chunk
 
 import (
+	"fmt"
+
 	"github.com/HillcrestEnigma/mcbuild/datatype"
 )
 
@@ -25,16 +27,24 @@ func newPalettedContainer(size uint8, init int32) (p *palettedContainer) {
 	return
 }
 
-func (p *palettedContainer) get(x, y, z uint8) int32 {
-	return p.data[p.dataIndex(x, y, z)]
+func (p *palettedContainer) get(x, y, z uint8) (int32, error) {
+	index, err := p.dataIndex(x, y, z)
+	if err != nil {
+		return 0, err
+	}
+
+	return p.data[index], nil
 }
 
-func (p *palettedContainer) set(x, y, z uint8, value int32) {
-	index := p.dataIndex(x, y, z)
+func (p *palettedContainer) set(x, y, z uint8, value int32) error {
+	index, err := p.dataIndex(x, y, z)
+	if err != nil {
+		return err
+	}
 
 	oldValue := p.data[index]
 	if oldValue == value {
-		return
+		return nil
 	}
 
 	p.palette[oldValue]--
@@ -49,11 +59,18 @@ func (p *palettedContainer) set(x, y, z uint8, value int32) {
 	}
 
 	p.data[index] = value
+
+	return nil
 }
 
-func (p *palettedContainer) dataIndex(x, y, z uint8) (index uint32) {
+func (p *palettedContainer) dataIndex(x, y, z uint8) (uint32, error) {
 	size := uint32(p.size)
-	return uint32(y)*size*size + uint32(z)*size + uint32(x)
+	index := uint32(y)*size*size + uint32(z)*size + uint32(x)
+
+	if !(0 <= index && index <= uint32(len(p.data))) {
+		return 0, fmt.Errorf("index out of bounds for given x, y, z")
+	}
+	return index, nil
 }
 
 func WritePalettedContainer(w datatype.Writer, p *palettedContainer, bpe uint8) (err error) {
