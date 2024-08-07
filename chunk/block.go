@@ -10,7 +10,7 @@ type block struct {
 }
 
 func NewBlockByIdentifier(identifier string, properties ...registry.BlockStateProperties) (*block, error) {
-	blockState, err := registry.GetBlockStateByIdentifier(identifier, properties...)
+	blockState, err := registry.BlockStateByIdentifier(identifier, properties...)
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +19,7 @@ func NewBlockByIdentifier(identifier string, properties ...registry.BlockStatePr
 }
 
 func NewBlockByRegistryID(registryID int32) (*block, error) {
-	blockState, err := registry.GetBlockStateByRegistryID(registryID)
+	blockState, err := registry.BlockStateByRegistryID(registryID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +51,11 @@ func (b *block) IsMotionBlocking() bool {
 }
 
 func (b *block) IsLeaves() bool {
-	blockInfo, err := registry.GetBlockByIdentifier(b.Identifier)
+	blockInfo, err := registry.BlockByIdentifier(b.Identifier)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	switch blockInfo.BlockType {
 	case "minecraft:leaves", "minecraft:cherry_leaves", "minecraft:mangrove_leaves":
 		return true

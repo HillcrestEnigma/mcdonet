@@ -5,12 +5,9 @@ import (
 	"net"
 
 	"github.com/HillcrestEnigma/mcbuild/connection"
-	"github.com/HillcrestEnigma/mcbuild/registry"
 )
 
 func main() {
-	registry.LoadRegistryData()
-
 	l, err := net.Listen("tcp", ":2000")
 
 	if err != nil {

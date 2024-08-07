@@ -16,8 +16,8 @@ type chunkSectionBlock struct {
 	SectionZ     uint8
 }
 
-func newChunkSection() (s chunkSection) {
-	return chunkSection{
+func newChunkSection() (s *chunkSection) {
+	return &chunkSection{
 		blockCount:  0,
 		blockStates: *newPalettedContainer(16, 0),
 		biomes:      *newPalettedContainer(4, 0),
@@ -25,7 +25,7 @@ func newChunkSection() (s chunkSection) {
 	}
 }
 
-func (s *chunkSection) getBlock(sectionX, sectionY, sectionZ uint8) *chunkSectionBlock {
+func (s *chunkSection) block(sectionX, sectionY, sectionZ uint8) *chunkSectionBlock {
 	registryID := s.blockStates.get(sectionX, sectionY, sectionZ)
 
 	block, err := NewBlockByRegistryID(registryID)
@@ -43,7 +43,7 @@ func (s *chunkSection) getBlock(sectionX, sectionY, sectionZ uint8) *chunkSectio
 }
 
 func (s *chunkSection) setBlock(sectionX, sectionY, sectionZ uint8, newBlock *block) {
-	oldBlock := s.getBlock(sectionX, sectionY, sectionZ)
+	oldBlock := s.block(sectionX, sectionY, sectionZ)
 
 	if oldBlock.Identifier == newBlock.Identifier {
 		return
@@ -64,8 +64,6 @@ func (b *chunkSectionBlock) set(newBlock *block) {
 	b.block = *newBlock
 }
 
-
-// TODO: consider changing s to not be a pointer, or change other functions to also use pointers
 func WriteChunkSection(w datatype.Writer, s *chunkSection) (err error) {
 	err = datatype.WriteNumber(w, s.blockCount)
 	if err != nil {

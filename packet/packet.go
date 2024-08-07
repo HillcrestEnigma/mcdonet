@@ -10,14 +10,13 @@ import (
 )
 
 type Packet struct {
+	bytes.Buffer
 	Id   int32
-	Data *bytes.Buffer
 }
 
 func NewPacket(id int32) *Packet {
 	return &Packet{
 		Id:   id,
-		Data: bytes.NewBuffer([]byte{}),
 	}
 }
 
@@ -68,7 +67,7 @@ func WritePacket(w datatype.Writer, p *Packet) (err error) {
 		return err
 	}
 
-	_, err = buf.Write(p.Data.Bytes())
+	_, err = buf.Write(p.Bytes())
 	if err != nil {
 		return err
 	}
@@ -81,20 +80,4 @@ func WritePacket(w datatype.Writer, p *Packet) (err error) {
 	_, err = w.Write(buf.Bytes())
 
 	return
-}
-
-func (p *Packet) Read(b []byte) (n int, err error) {
-	return p.Data.Read(b)
-}
-
-func (p *Packet) ReadByte() (byte, error) {
-	return p.Data.ReadByte()
-}
-
-func (p *Packet) Write(b []byte) (n int, err error) {
-	return p.Data.Write(b)
-}
-
-func (p *Packet) WriteByte(b byte) error {
-	return p.Data.WriteByte(b)
 }

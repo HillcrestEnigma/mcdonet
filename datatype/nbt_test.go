@@ -23,7 +23,7 @@ func openFile(t testing.TB, filename string) (r datatype.Reader, file *os.File) 
 	return
 }
 
-func openNBT(t testing.TB, filename string) (nbt datatype.NBT) {
+func openNBT(t testing.TB, filename string) (nbt *datatype.NBT) {
 	t.Helper()
 
 	r, f := openFile(t, filename)
@@ -37,7 +37,7 @@ func openNBT(t testing.TB, filename string) (nbt datatype.NBT) {
 	return
 }
 
-func assertReadNBTMatchesExpected(t testing.TB, filename string, expected datatype.NBT) {
+func assertReadNBTMatchesExpected(t testing.TB, filename string, expected *datatype.NBT) {
 	t.Helper()
 
 	got := openNBT(t, filename)
@@ -91,7 +91,7 @@ func assertWriteNetworkNBTMatchesReadNetworkNBT(t testing.TB, filename string) {
 
 func TestReadNBT(t *testing.T) {
 	t.Run("helloworld.nbt", func(t *testing.T) {
-		expected := datatype.NBT{
+		expected := &datatype.NBT{
 			Name: "hello world",
 			Compound: datatype.NBTCompound{
 				"name": "Bananrama",
@@ -102,7 +102,7 @@ func TestReadNBT(t *testing.T) {
 	})
 
 	t.Run("bigtest.nbt", func(t *testing.T) {
-		expected := datatype.NBT{
+		expected := &datatype.NBT{
 			Name: "Level",
 			Compound: datatype.NBTCompound{
 				"nested compound test": datatype.NBTCompound{

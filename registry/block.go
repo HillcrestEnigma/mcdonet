@@ -88,7 +88,7 @@ func loadBlockStateRegistry() (err error) {
 	return
 }
 
-func GetBlockByIdentifier(identifier string) (*block, error) {
+func BlockByIdentifier(identifier string) (*block, error) {
 	b, ok := blocksByIdentifier[identifier]
 	if !ok {
 		return nil, fmt.Errorf("block %s not found", identifier)
@@ -96,7 +96,7 @@ func GetBlockByIdentifier(identifier string) (*block, error) {
 	return b, nil
 }
 
-func GetBlockStateByRegistryID(registryID int32) (*BlockState, error) {
+func BlockStateByRegistryID(registryID int32) (*BlockState, error) {
 	blockState, ok := blockStatesByRegistryID[registryID]
 	if !ok {
 		return nil, fmt.Errorf("block state %d not found", registryID)
@@ -104,8 +104,8 @@ func GetBlockStateByRegistryID(registryID int32) (*BlockState, error) {
 	return blockState, nil
 }
 
-func GetBlockStateByIdentifier(identifier string, properties ...BlockStateProperties) (*BlockState, error) {
-	b, err := GetBlockByIdentifier(identifier)
+func BlockStateByIdentifier(identifier string, properties ...BlockStateProperties) (*BlockState, error) {
+	b, err := BlockByIdentifier(identifier)
 	if err != nil {
 		return nil, err
 	}
@@ -130,8 +130,8 @@ blockState:
 	return nil, fmt.Errorf("no matching block state found for specified properties")
 }
 
-func GetBlockStatePropertiesByRegistryID(registryID int32) (BlockStateProperties, error) {
-	blockState, err := GetBlockStateByRegistryID(registryID)
+func BlockStatePropertiesByRegistryID(registryID int32) (BlockStateProperties, error) {
+	blockState, err := BlockStateByRegistryID(registryID)
 	if err != nil {
 		return nil, err
 	}

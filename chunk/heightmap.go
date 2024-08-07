@@ -9,13 +9,13 @@ type heightmap []int32
 // index 3: MOTION_BLOCKING_NO_LEAVES
 type heightmaps [4]heightmap
 
-func newHeightmaps() heightmaps {
+func newHeightmaps() *heightmaps {
 	var h heightmaps
 	for i := range h {
 		h[i] = make(heightmap, 16*16)
 	}
 
-	return h
+	return &h
 }
 
 func (h *heightmap) get(x, z uint8) int32 {
@@ -40,7 +40,7 @@ func (c *Chunk) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sect
 	// 3, 0x08: MOTION_BLOCKING_NO_LEAVES
 
 	for y := startY; y >= 0; y-- {
-		block := c.GetBlock(sectionX, y, sectionZ)
+		block := c.Block(sectionX, y, sectionZ)
 
 		if foundHeights&0x01 == 0 && !block.IsAir() {
 			heights[0] = y + 1

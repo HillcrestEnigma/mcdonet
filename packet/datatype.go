@@ -98,11 +98,11 @@ func (p *Packet) WriteBool(val bool) error {
 	return datatype.WriteBool(p, val)
 }
 
-func (p *Packet) ReadNBT() (datatype.NBT, error) {
+func (p *Packet) ReadNBT() (*datatype.NBT, error) {
 	return datatype.ReadNetworkNBT(p)
 }
 
-func (p *Packet) WriteNBT(val datatype.NBT) error {
+func (p *Packet) WriteNBT(val *datatype.NBT) error {
 	return datatype.WriteNetworkNBT(p, val)
 }
 

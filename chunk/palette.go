@@ -26,11 +26,11 @@ func newPalettedContainer(size uint8, init int32) (p *palettedContainer) {
 }
 
 func (p *palettedContainer) get(x, y, z uint8) int32 {
-	return p.data[p.getDataIndex(x, y, z)]
+	return p.data[p.dataIndex(x, y, z)]
 }
 
 func (p *palettedContainer) set(x, y, z uint8, value int32) {
-	index := p.getDataIndex(x, y, z)
+	index := p.dataIndex(x, y, z)
 
 	oldValue := p.data[index]
 	if oldValue == value {
@@ -51,7 +51,7 @@ func (p *palettedContainer) set(x, y, z uint8, value int32) {
 	p.data[index] = value
 }
 
-func (p *palettedContainer) getDataIndex(x, y, z uint8) (index uint32) {
+func (p *palettedContainer) dataIndex(x, y, z uint8) (index uint32) {
 	size := uint32(p.size)
 	return uint32(y)*size*size + uint32(z)*size + uint32(x)
 }

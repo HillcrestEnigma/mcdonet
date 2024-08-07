@@ -14,7 +14,7 @@ type NBT struct {
 }
 
 // TODO: consider changing function signatures to accept a pointer to NBT
-func ReadNBT(r Reader) (val NBT, err error) {
+func ReadNBT(r Reader) (val *NBT, err error) {
 	typeID, name, err := readNBTHeader(r)
 	if err != nil {
 		return
@@ -29,11 +29,11 @@ func ReadNBT(r Reader) (val NBT, err error) {
 		return
 	}
 
-	val = NBT{Name: name, Compound: compound.(NBTCompound)}
+	val = &NBT{Name: name, Compound: compound.(NBTCompound)}
 	return
 }
 
-func ReadNetworkNBT(r Reader) (val NBT, err error) {
+func ReadNetworkNBT(r Reader) (val *NBT, err error) {
 	typeID, err := ReadNumber[int8](r)
 	if err != nil {
 		return
@@ -44,11 +44,11 @@ func ReadNetworkNBT(r Reader) (val NBT, err error) {
 		return
 	}
 
-	val = NBT{Name: "", Compound: compound.(NBTCompound)}
+	val = &NBT{Name: "", Compound: compound.(NBTCompound)}
 	return
 }
 
-func WriteNBT(w Writer, val NBT) (err error) {
+func WriteNBT(w Writer, val *NBT) (err error) {
 	err = writeNBTHeader(w, 10, val.Name)
 	if err != nil {
 		return
@@ -58,7 +58,7 @@ func WriteNBT(w Writer, val NBT) (err error) {
 	return
 }
 
-func WriteNetworkNBT(w Writer, val NBT) (err error) {
+func WriteNetworkNBT(w Writer, val *NBT) (err error) {
 	err = WriteNumber(w, int8(10))
 	if err != nil {
 		return
@@ -215,7 +215,7 @@ func readNBTPayload(r Reader, typeID int8) (val any, err error) {
 }
 
 func writeNBTPayload(w Writer, val any) (err error) {
-	typeID, err := getTypeIDFromType(val)
+	typeID, err := typeIDFromType(val)
 	if err != nil {
 		return
 	}
@@ -249,7 +249,7 @@ func writeNBTPayload(w Writer, val any) (err error) {
 
 		var listTypeID int8 = 0
 		if len(list) > 0 {
-			listTypeID, err = getTypeIDFromType((list)[0])
+			listTypeID, err = typeIDFromType((list)[0])
 			if err != nil {
 				return
 			}
@@ -274,7 +274,7 @@ func writeNBTPayload(w Writer, val any) (err error) {
 	case 10:
 		compound := val.(NBTCompound)
 		for name, item := range compound {
-			itemTypeID, err := getTypeIDFromType(item)
+			itemTypeID, err := typeIDFromType(item)
 			if err != nil {
 				return err
 			}
@@ -344,7 +344,7 @@ func writeNBTString(w Writer, val string) (err error) {
 	return writeRawString(w, val)
 }
 
-func getTypeIDFromType(val any) (typeID int8, err error) {
+func typeIDFromType(val any) (typeID int8, err error) {
 	switch val.(type) {
 	case int8:
 		typeID = 1
@@ -407,7 +407,7 @@ func nbtStringWithIndent(name string, val any, indentLevel int) (str string, err
 		return fmt.Sprintf("TAG_%s(%s): ", typeName, name)
 	}
 
-	typeID, err := getTypeIDFromType(val)
+	typeID, err := typeIDFromType(val)
 
 	str = strings.Repeat("  ", indentLevel)
 

@@ -12,8 +12,8 @@ type Chunk struct {
 	Z             int32
 	min_y         int32
 	height        int32
-	heightmaps    heightmaps
-	chunkSections []chunkSection
+	heightmaps    *heightmaps
+	chunkSections []*chunkSection
 }
 
 type ChunkBlock struct {
@@ -24,7 +24,7 @@ type ChunkBlock struct {
 
 // Consider accepting a Biome object instead of a uint32
 func NewChunk(x, z, min_y, height int32) (chunk *Chunk) {
-	chunkSections := make([]chunkSection, height/16)
+	chunkSections := make([]*chunkSection, height/16)
 	for i := range chunkSections {
 		chunkSections[i] = newChunkSection()
 	}
@@ -40,11 +40,11 @@ func NewChunk(x, z, min_y, height int32) (chunk *Chunk) {
 	return
 }
 
-func (c *Chunk) GetBlock(sectionX uint8, y int32, sectionZ uint8) *ChunkBlock {
+func (c *Chunk) Block(sectionX uint8, y int32, sectionZ uint8) *ChunkBlock {
 	sectionIndex := (y - c.min_y) / 16
 	sectionY := uint8(y % 16)
 
-	block := c.chunkSections[sectionIndex].getBlock(sectionX, sectionY, sectionZ)
+	block := c.chunkSections[sectionIndex].block(sectionX, sectionY, sectionZ)
 
 	return &ChunkBlock{
 		chunkSectionBlock: *block,
@@ -54,7 +54,7 @@ func (c *Chunk) GetBlock(sectionX uint8, y int32, sectionZ uint8) *ChunkBlock {
 }
 
 func (c *Chunk) SetBlock(sectionX uint8, y int32, sectionZ uint8, block *block) {
-	chunkBlock := c.GetBlock(sectionX, y, sectionZ)
+	chunkBlock := c.Block(sectionX, y, sectionZ)
 	chunkBlock.set(block)
 	c.recomputeHeightAtSectionXZ(sectionX, y, sectionZ)
 }
@@ -65,13 +65,13 @@ func WriteNetworkChunk(w datatype.Writer, c *Chunk) (err error) {
 		return
 	}
 
-	datatype.WriteNumber(w, c.Z)
+	err = datatype.WriteNumber(w, c.Z)
 	if err != nil {
 		return
 	}
 
 	heightmapsBPE := uint8(math.Ceil(math.Log2(float64(c.height + 1))))
-	heightmapsNBT := datatype.NBT{
+	heightmapsNBT := &datatype.NBT{
 		Name: "Heightmaps",
 		Compound: datatype.NBTCompound{
 			"WORLD_SURFACE":             datatype.PackIntoLongArray(heightmapsBPE, c.heightmaps[0]),
@@ -84,7 +84,7 @@ func WriteNetworkChunk(w datatype.Writer, c *Chunk) (err error) {
 
 	var buf bytes.Buffer
 	for _, section := range c.chunkSections {
-		err = WriteChunkSection(&buf, &section)
+		err = WriteChunkSection(&buf, section)
 		if err != nil {
 			return
 		}
