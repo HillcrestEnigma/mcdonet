@@ -1,23 +1,28 @@
 package chunk
 
-import "github.com/HillcrestEnigma/mcbuild/datatype"
+import (
+	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcbuild/world/block"
+)
 
 type chunkSection struct {
+	chunkColumn *ChunkColumn
 	blockCount  int16
 	blockStates palettedContainer
 	biomes      palettedContainer
 }
 
 type chunkSectionBlock struct {
-	block
+	block.Block
 	ChunkSection *chunkSection
 	SectionX     uint8
 	SectionY     uint8
 	SectionZ     uint8
 }
 
-func newChunkSection() (s *chunkSection) {
+func newChunkSection(chunkColumn *ChunkColumn) (s *chunkSection) {
 	return &chunkSection{
+		chunkColumn: chunkColumn,
 		blockCount:  0,
 		blockStates: *newPalettedContainer(16, 0),
 		biomes:      *newPalettedContainer(4, 0),
@@ -31,13 +36,13 @@ func (s *chunkSection) block(sectionX, sectionY, sectionZ uint8) (*chunkSectionB
 		return nil, err
 	}
 
-	block, err := NewBlockByID(id)
+	b, err := block.NewBlockByID(id)
 	if err != nil {
 		panic(err)
 	}
 
 	return &chunkSectionBlock{
-		block:        *block,
+		Block:        *b,
 		ChunkSection: s,
 		SectionX:     sectionX,
 		SectionY:     sectionY,
@@ -45,13 +50,13 @@ func (s *chunkSection) block(sectionX, sectionY, sectionZ uint8) (*chunkSectionB
 	}, nil
 }
 
-func (s *chunkSection) setBlock(sectionX, sectionY, sectionZ uint8, newBlock *block) error {
+func (s *chunkSection) setBlock(sectionX, sectionY, sectionZ uint8, newBlock *block.Block) error {
 	oldBlock, err := s.block(sectionX, sectionY, sectionZ)
 	if err != nil {
 		return err
 	}
 
-	if oldBlock.identifier == newBlock.identifier {
+	if oldBlock.Identifier == newBlock.Identifier {
 		return nil
 	}
 
@@ -62,14 +67,14 @@ func (s *chunkSection) setBlock(sectionX, sectionY, sectionZ uint8, newBlock *bl
 		s.blockCount++
 	}
 
-	s.blockStates.set(sectionX, sectionY, sectionZ, newBlock.id)
-	
+	s.blockStates.set(sectionX, sectionY, sectionZ, newBlock.ID)
+
 	return nil
 }
 
-func (b *chunkSectionBlock) set(newBlock *block) {
+func (b *chunkSectionBlock) set(newBlock *block.Block) {
 	b.ChunkSection.setBlock(b.SectionX, b.SectionY, b.SectionZ, newBlock)
-	b.block = *newBlock
+	b.Block = *newBlock
 }
 
 func WriteChunkSection(w datatype.Writer, s *chunkSection) (err error) {

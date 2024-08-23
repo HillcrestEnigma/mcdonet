@@ -3,8 +3,9 @@ package connection
 import (
 	"time"
 
-	"github.com/HillcrestEnigma/mcbuild/chunk"
 	"github.com/HillcrestEnigma/mcbuild/packet"
+	"github.com/HillcrestEnigma/mcbuild/world/block"
+	"github.com/HillcrestEnigma/mcbuild/world/chunk"
 )
 
 func (c *connection) handlePlay() (err error) {
@@ -25,24 +26,21 @@ func (c *connection) handlePlay() (err error) {
 	// 	return
 	// }
 
-	spawn := chunk.NewChunk(0, 0, -64, 384)
+	dirtBlock, err := block.NewBlockByIdentifier("minecraft:dirt")
+	if err != nil {
+		return err
+	}
+
+	spawn := chunk.NewChunkColumn(0, 0, -64, 384)
 	for x := uint8(0); x < 16; x++ {
 		for z := uint8(0); z < 16; z++ {
-			err = spawn.SetBlock(uint8(x), 0, uint8(z), "minecraft:dirt")
+			err = spawn.SetBlock(uint8(x), 0, uint8(z), dirtBlock)
 			if err != nil {
 				return
 			}
 		}
 	}
 	c.writeChunkDataAndUpdateLight(spawn)
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(16, 16, -64, 384))
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(0, 16, -64, 384))
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(-16, 16, -64, 384))
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(-16, 0, -64, 384))
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(-16, -16, -64, 384))
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(0, -16, -64, 384))
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(16, -16, -64, 384))
-	c.writeChunkDataAndUpdateLight(chunk.NewChunk(16, 0, -64, 384))
 
 	time.Sleep(100 * time.Second)
 
@@ -194,7 +192,7 @@ func (c *connection) writeGameEvent(event uint8, value float32) (err error) {
 	return c.writePacket(p)
 }
 
-func (c *connection) writeChunkDataAndUpdateLight(chunkData *chunk.Chunk) (err error) {
+func (c *connection) writeChunkDataAndUpdateLight(chunkData *chunk.ChunkColumn) (err error) {
 	p := packet.NewPacket(0x27)
 
 	p.WriteChunk(chunkData)

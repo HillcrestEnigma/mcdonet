@@ -3,7 +3,7 @@ package packet
 import (
 	"encoding/json"
 
-	"github.com/HillcrestEnigma/mcbuild/chunk"
+	"github.com/HillcrestEnigma/mcbuild/world/chunk"
 	"github.com/HillcrestEnigma/mcbuild/datatype"
 	"github.com/google/uuid"
 )
@@ -106,6 +106,6 @@ func (p *Packet) WriteNBT(val *datatype.NBT) error {
 	return datatype.WriteNetworkNBT(p, val)
 }
 
-func (p *Packet) WriteChunk(c *chunk.Chunk) error {
-	return chunk.WriteNetworkChunk(p, c)
+func (p *Packet) WriteChunk(c *chunk.ChunkColumn) error {
+	return chunk.WriteNetworkChunkColumn(p, c)
 }

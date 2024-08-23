@@ -26,7 +26,7 @@ func (h *heightmap) set(x, z uint8, value int32) {
 	(*h)[z*16+x] = value
 }
 
-func (c *Chunk) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sectionZ uint8) error {
+func (c *ChunkColumn) recomputeHeightAtSectionXZ(sectionX uint8, modifiedY int32, sectionZ uint8) error {
 	startY := modifiedY
 	for i := range c.heightmaps {
 		startY = max(startY, c.heightmaps[i].get(sectionX, sectionZ))

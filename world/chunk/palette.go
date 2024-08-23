@@ -67,7 +67,7 @@ func (p *palettedContainer) dataIndex(x, y, z uint8) (uint32, error) {
 	size := uint32(p.size)
 	index := uint32(y)*size*size + uint32(z)*size + uint32(x)
 
-	if !(0 <= index && index <= uint32(len(p.data))) {
+	if !(index <= uint32(len(p.data))) {
 		return 0, fmt.Errorf("index out of bounds for given x, y, z")
 	}
 	return index, nil

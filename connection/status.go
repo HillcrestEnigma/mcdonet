@@ -45,7 +45,7 @@ func (c *connection) handleStatusRequest() (err error) {
 
 	response := statusResponse{
 		Version: statusResponseVersion{
-			Name:     "1.21",
+			Name:     "1.21.1",
 			Protocol: 767,
 		},
 	}

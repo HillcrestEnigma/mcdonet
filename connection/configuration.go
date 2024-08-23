@@ -56,7 +56,7 @@ func (c *connection) writeClientboundKnownPacks() (err error) {
 	}
 
 	// Pack Version
-	err = p.WriteString("1.21")
+	err = p.WriteString("1.21.1")
 	if err != nil {
 		return
 	}

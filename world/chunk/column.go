@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"math"
 
-	"github.com/HillcrestEnigma/mcbuild/config"
 	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcbuild/world/block"
 )
 
-type Chunk struct {
+type ChunkColumn struct {
 	X             int32
 	Z             int32
 	min_y         int32
@@ -17,20 +17,16 @@ type Chunk struct {
 	chunkSections []*chunkSection
 }
 
-type ChunkBlock struct {
+type ChunkColumnBlock struct {
 	chunkSectionBlock
-	Chunk *Chunk
+	ChunkColumn *ChunkColumn
 	Y     int32
 }
 
 // Consider accepting a Biome object instead of a uint32
-func NewChunk(x, z, min_y, height int32) (chunk *Chunk) {
+func NewChunkColumn(x, z, min_y, height int32) (chunk *ChunkColumn) {
 	chunkSections := make([]*chunkSection, height/16)
-	for i := range chunkSections {
-		chunkSections[i] = newChunkSection()
-	}
-
-	chunk = &Chunk{
+	chunk = &ChunkColumn{
 		X:             x,
 		Z:             z,
 		min_y:         min_y,
@@ -38,10 +34,14 @@ func NewChunk(x, z, min_y, height int32) (chunk *Chunk) {
 		heightmaps:    newHeightmaps(),
 		chunkSections: chunkSections,
 	}
+
+	for i := range chunkSections {
+		chunkSections[i] = newChunkSection(chunk)
+	}
 	return
 }
 
-func (c *Chunk) Block(sectionX uint8, y int32, sectionZ uint8) (*ChunkBlock, error) {
+func (c *ChunkColumn) Block(sectionX uint8, y int32, sectionZ uint8) (*ChunkColumnBlock, error) {
 	sectionIndex := (y - c.min_y) / 16
 	sectionY := uint8(y % 16)
 
@@ -50,25 +50,20 @@ func (c *Chunk) Block(sectionX uint8, y int32, sectionZ uint8) (*ChunkBlock, err
 		return nil, err
 	}
 
-	return &ChunkBlock{
+	return &ChunkColumnBlock{
 		chunkSectionBlock: *block,
-		Chunk:             c,
+		ChunkColumn:             c,
 		Y:                 y,
 	}, nil
 }
 
-func (c *Chunk) SetBlock(sectionX uint8, y int32, sectionZ uint8, blockIdentifier string, blockProperties ...config.BlockStateProperties) error {
+func (c *ChunkColumn) SetBlock(sectionX uint8, y int32, sectionZ uint8, newBlock *block.Block) error {
 	chunkBlock, err := c.Block(sectionX, y, sectionZ)
 	if err != nil {
 		return err
 	}
 
-	block, err := NewBlockByIdentifier(blockIdentifier, blockProperties...)
-	if err != nil {
-		return err
-	}
-
-	chunkBlock.set(block)
+	chunkBlock.chunkSectionBlock.set(newBlock)
 
 	err = c.recomputeHeightAtSectionXZ(sectionX, y, sectionZ)
 	if err != nil {
@@ -77,7 +72,11 @@ func (c *Chunk) SetBlock(sectionX uint8, y int32, sectionZ uint8, blockIdentifie
 	return nil
 }
 
-func WriteNetworkChunk(w datatype.Writer, c *Chunk) (err error) {
+func (b *ChunkColumnBlock) set(newBlock *block.Block) {
+	b.ChunkColumn.SetBlock(b.SectionX, b.Y, b.SectionZ, newBlock)
+}
+
+func WriteNetworkChunkColumn(w datatype.Writer, c *ChunkColumn) (err error) {
 	err = datatype.WriteNumber(w, c.X)
 	if err != nil {
 		return
