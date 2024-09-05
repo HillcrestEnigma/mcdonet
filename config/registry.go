@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
 )
 
 type RegistryEntry struct {

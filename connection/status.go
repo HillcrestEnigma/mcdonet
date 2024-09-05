@@ -3,7 +3,7 @@ package connection
 import (
 	"errors"
 
-	"github.com/HillcrestEnigma/mcbuild/packet"
+	"github.com/HillcrestEnigma/mcdonet/packet"
 )
 
 type statusResponseVersion struct {
@@ -15,7 +15,7 @@ type statusResponse struct {
 	Version statusResponseVersion `json:"version"`
 }
 
-func (c *connection) handleServerListPing() error {
+func (c *Connection) handleServerListPing() error {
 	for {
 		p, err := c.readPacket(0x00, 0x01)
 		if err != nil {
@@ -40,7 +40,7 @@ func (c *connection) handleServerListPing() error {
 	}
 }
 
-func (c *connection) handleStatusRequest() (err error) {
+func (c *Connection) handleStatusRequest() (err error) {
 	p := packet.NewPacket(0x00)
 
 	response := statusResponse{
@@ -58,7 +58,7 @@ func (c *connection) handleStatusRequest() (err error) {
 	return c.writePacket(p)
 }
 
-func (c *connection) handleStatusPing(request *packet.Packet) error {
+func (c *Connection) handleStatusPing(request *packet.Packet) error {
 	payload, err := request.ReadInt64()
 	if err != nil {
 		return err

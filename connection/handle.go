@@ -1,13 +1,11 @@
 package connection
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"unicode/utf16"
 )
 
@@ -18,13 +16,7 @@ type handshake struct {
 	nextState  int32
 }
 
-func HandleConnection(netConn net.Conn) {
-	c := &connection{
-		player: nil,
-		net:    netConn,
-		buf:    bufio.NewReadWriter(bufio.NewReader(netConn), bufio.NewWriter(netConn)),
-	}
-
+func (c *Connection) HandleConnection() {
 	defer c.close()
 
 	isLegacy, err := c.handleLegacyServerListPing()
@@ -56,7 +48,7 @@ func HandleConnection(netConn net.Conn) {
 	}
 }
 
-func (c *connection) readHandshake() (h *handshake, err error) {
+func (c *Connection) readHandshake() (h *handshake, err error) {
 	p, err := c.readPacket(0x00)
 	if err != nil {
 		return
@@ -97,7 +89,7 @@ func (c *connection) readHandshake() (h *handshake, err error) {
 	return
 }
 
-func (c *connection) handleLegacyServerListPing() (bool, error) {
+func (c *Connection) handleLegacyServerListPing() (bool, error) {
 	sig, err := c.buf.Peek(3)
 	if err != nil {
 		return false, err
@@ -108,12 +100,12 @@ func (c *connection) handleLegacyServerListPing() (bool, error) {
 	}
 
 	info := []string{
-		"§1", // Always Required
-		"47", // Protocol Version
+		"§1",                   // Always Required
+		"47",                   // Protocol Version
 		"Greater than 1.7 pls", // Version
-		"MCBuild Server", // Server Name
-		"0", // Online Players
-		"20", // Max Players
+		"McDoNet Server",       // Server Name
+		"0",                    // Online Players
+		"20",                   // Max Players
 	}
 
 	response := make([]byte, 0)

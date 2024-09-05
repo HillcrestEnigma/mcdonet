@@ -3,7 +3,7 @@ package chunk
 import (
 	"fmt"
 
-	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
 )
 
 // data is indexed [y][z][x]

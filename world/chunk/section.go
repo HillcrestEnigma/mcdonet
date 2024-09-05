@@ -1,8 +1,8 @@
 package chunk
 
 import (
-	"github.com/HillcrestEnigma/mcbuild/datatype"
-	"github.com/HillcrestEnigma/mcbuild/world/block"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
+	"github.com/HillcrestEnigma/mcdonet/world/block"
 )
 
 type chunkSection struct {

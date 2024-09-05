@@ -1,11 +1,11 @@
 package connection
 
 import (
-	"github.com/HillcrestEnigma/mcbuild/config"
-	"github.com/HillcrestEnigma/mcbuild/packet"
+	"github.com/HillcrestEnigma/mcdonet/config"
+	"github.com/HillcrestEnigma/mcdonet/packet"
 )
 
-func (c *connection) handleConfiguration() (err error) {
+func (c *Connection) handleConfiguration() (err error) {
 	err = c.writeClientboundKnownPacks()
 	if err != nil {
 		return
@@ -34,7 +34,7 @@ func (c *connection) handleConfiguration() (err error) {
 	return c.handlePlay()
 }
 
-func (c *connection) writeClientboundKnownPacks() (err error) {
+func (c *Connection) writeClientboundKnownPacks() (err error) {
 	p := packet.NewPacket(0x0E)
 
 	// Known Pack Count Array
@@ -64,7 +64,7 @@ func (c *connection) writeClientboundKnownPacks() (err error) {
 	return c.writePacket(p)
 }
 
-func (c *connection) readServerboundKnownPacks() (err error) {
+func (c *Connection) readServerboundKnownPacks() (err error) {
 	p, err := c.acceptPacket(0x07)
 	if err != nil {
 		return
@@ -95,7 +95,7 @@ func (c *connection) readServerboundKnownPacks() (err error) {
 	return
 }
 
-func (c *connection) writeRegistryData() error {
+func (c *Connection) writeRegistryData() error {
 	for registryIdentifier, entries := range config.RegistriesByIdentifier {
 		p := packet.NewPacket(0x07)
 
@@ -130,13 +130,13 @@ func (c *connection) writeRegistryData() error {
 	return nil
 }
 
-func (c *connection) writeFinishConfiguration() (err error) {
+func (c *Connection) writeFinishConfiguration() (err error) {
 	p := packet.NewPacket(0x03)
 
 	return c.writePacket(p)
 }
 
-func (c *connection) readAckFinishConfiguration() (err error) {
+func (c *Connection) readAckFinishConfiguration() (err error) {
 	_, err = c.acceptPacket(0x03)
 	if err != nil {
 		return

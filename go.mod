@@ -1,4 +1,4 @@
-module github.com/HillcrestEnigma/mcbuild
+module github.com/HillcrestEnigma/mcdonet
 
 go 1.23.0
 

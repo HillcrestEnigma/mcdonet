@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
 )
 
 func openFile(t testing.TB, filename string) (r datatype.Reader, file *os.File) {

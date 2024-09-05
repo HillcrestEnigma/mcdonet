@@ -1,6 +1,6 @@
 package block
 
-import "github.com/HillcrestEnigma/mcbuild/config"
+import "github.com/HillcrestEnigma/mcdonet/config"
 
 func (b *Block) IsAir() bool {
 	switch b.Identifier {

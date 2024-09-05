@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"math"
 
-	"github.com/HillcrestEnigma/mcbuild/datatype"
-	"github.com/HillcrestEnigma/mcbuild/world/block"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
+	"github.com/HillcrestEnigma/mcdonet/world/block"
 )
 
 type ChunkColumn struct {
@@ -20,7 +20,7 @@ type ChunkColumn struct {
 type ChunkColumnBlock struct {
 	chunkSectionBlock
 	ChunkColumn *ChunkColumn
-	Y     int32
+	Y           int32
 }
 
 // Consider accepting a Biome object instead of a uint32
@@ -52,7 +52,7 @@ func (c *ChunkColumn) Block(sectionX uint8, y int32, sectionZ uint8) (*ChunkColu
 
 	return &ChunkColumnBlock{
 		chunkSectionBlock: *block,
-		ChunkColumn:             c,
+		ChunkColumn:       c,
 		Y:                 y,
 	}, nil
 }

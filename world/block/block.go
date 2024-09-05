@@ -1,7 +1,7 @@
 package block
 
 import (
-	"github.com/HillcrestEnigma/mcbuild/config"
+	"github.com/HillcrestEnigma/mcdonet/config"
 )
 
 type Block struct {

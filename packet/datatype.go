@@ -3,8 +3,8 @@ package packet
 import (
 	"encoding/json"
 
-	"github.com/HillcrestEnigma/mcbuild/world/chunk"
-	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
+	"github.com/HillcrestEnigma/mcdonet/world/chunk"
 	"github.com/google/uuid"
 )
 

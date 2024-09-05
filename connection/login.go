@@ -1,8 +1,8 @@
 package connection
 
-import "github.com/HillcrestEnigma/mcbuild/packet"
+import "github.com/HillcrestEnigma/mcdonet/packet"
 
-func (c *connection) handleLogin() (err error) {
+func (c *Connection) handleLogin() (err error) {
 	err = c.readLoginStart()
 	if err != nil {
 		return
@@ -21,7 +21,7 @@ func (c *connection) handleLogin() (err error) {
 	return c.handleConfiguration()
 }
 
-func (c *connection) readLoginStart() (err error) {
+func (c *Connection) readLoginStart() (err error) {
 	p, err := c.readPacket(0x00)
 	if err != nil {
 		return
@@ -44,7 +44,7 @@ func (c *connection) readLoginStart() (err error) {
 	return
 }
 
-func (c *connection) writeLoginSuccess() (err error) {
+func (c *Connection) writeLoginSuccess() (err error) {
 	p := packet.NewPacket(0x02)
 
 	err = p.WriteUUID(c.player.UUID)
@@ -71,7 +71,7 @@ func (c *connection) writeLoginSuccess() (err error) {
 	return c.writePacket(p)
 }
 
-func (c *connection) readLoginAck() (err error) {
+func (c *Connection) readLoginAck() (err error) {
 	_, err = c.readPacket(0x03)
 	if err != nil {
 		return

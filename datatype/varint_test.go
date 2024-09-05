@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
 )
 
 var varInts = map[int32][]byte{

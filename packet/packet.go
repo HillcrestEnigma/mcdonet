@@ -6,17 +6,17 @@ import (
 	"io"
 	"slices"
 
-	"github.com/HillcrestEnigma/mcbuild/datatype"
+	"github.com/HillcrestEnigma/mcdonet/datatype"
 )
 
 type Packet struct {
 	bytes.Buffer
-	Id   int32
+	Id int32
 }
 
 func NewPacket(id int32) *Packet {
 	return &Packet{
-		Id:   id,
+		Id: id,
 	}
 }
 
